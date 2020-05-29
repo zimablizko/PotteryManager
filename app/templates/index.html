@@ -2,19 +2,37 @@
 {% block content %}
 <h1>Obrazec Manager 2020!</h1>
 
+<form action="" method="post">
+    {{ form.hidden_tag() }}
+    <table>
+        <tr>
+            <td>
+                {{ form.clay_filter.label }}
+                {{ form.clay_filter }}
+            </td>
+            <td>
+                {{ form.surface_filter.label }}
+                {{ form.surface_filter }}
+            </td>
+            <td>
+                    <p>{{ form.submit() }}</p>
+            </td>
+        </tr>
+    </table>
+</form>
 <table>
     <tr>
         <td></td>
-        {% for c in clays %}
-        <td><b>{{ c.name }}</b></td>
+        {% for g in glazes %}
+        <td><b>{{ g.name }}</b></td>
         {% endfor %}
     </tr>
-    {% for c1 in clays %}
+    {% for g1 in glazes %}
     <tr>
         <td>
-            <b>{{ c1.name }}</b>
+            <b>{{ g1.name }}</b>
         </td>
-        {% for c2 in clays %}
+        {% for g2 in glazes %}
         <td>
             {% include '_table_item.html' %}
         </td>

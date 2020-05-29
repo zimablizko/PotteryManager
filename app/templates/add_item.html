@@ -12,23 +12,37 @@
         {% endfor %}
     </p>
     <p>
-        {{ form.clay_id_1.label }}<br>
-        {{ form.clay_id_1(size=1) }}<br>
-        {% for error in form.clay_id_1.errors %}
+        {{ form.glaze_id_1.label }}<br>
+        {{ form.glaze_id_1(size=1) }}<br>
+        {% for error in form.glaze_id_1.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
     </p>
     <p>
-        {{ form.clay_id_2.label }}<br>
-        {{ form.clay_id_2(size=1) }}<br>
-        {% for error in form.clay_id_2.errors %}
+        {{ form.glaze_id_2.label }}<br>
+        {{ form.glaze_id_2(size=1) }}<br>
+        {% for error in form.glaze_id_2.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
     </p>
     <p>
-        {{ form.picture.label }}<br>
-        {{ form.picture }}<br>
-        {% for error in form.picture.errors %}
+        {{ form.clay_id.label }}<br>
+        {{ form.clay_id(size=1) }}<br>
+        {% for error in form.clay_id.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.surface_id.label }}<br>
+        {{ form.surface_id(size=1) }}<br>
+        {% for error in form.surface_id.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.image.label }}<br>
+        {{ form.image }}<br>
+        {% for error in form.image.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
     </p>

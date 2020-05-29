@@ -1,28 +1,28 @@
             {% for item in items %}
-                {% if item.clay_id_2==item.clay_id_1%}
-                    {% if item.clay_id_1==c1.id%}
-                        {% if item.clay_id_2==c2.id%}
-                            {% if item.picture%}
-                                <img style="width:180px" src="{{ url_for('images', image=item.picture)}}">
+                {% if item.glaze_id_2==item.glaze_id_1%}
+                    {% if item.glaze_id_1==g1.id%}
+                        {% if item.glaze_id_2==g2.id%}
+                            {% if item.image_name%}
+                                <img style="width:180px" src="{{ url_for('images', image=item.image_name)}}">
                                 <br> {{ item.name }}
                             {% else %}
                                 <p><b>{{ item.name }}</b></p>
                             {% endif %}
                         {% endif %}
                     {% endif %}
-                {% elif item.clay_id_1==c1.id%}
-                    {% if item.clay_id_2==c2.id%}
-                        {% if item.picture%}
-                                <img style="width:180px"  src="{{ url_for('images', image=item.picture)}}">
+                {% elif item.glaze_id_1==g1.id%}
+                    {% if item.glaze_id_2==g2.id%}
+                        {% if item.image_name%}
+                                <img style="width:180px"  src="{{ url_for('images', image=item.image_name)}}">
                                 <br> {{ item.name }}
                         {% else %}
                             <p><b>{{ item.name }}</b></p>
                         {% endif %}
                     {% endif %}
-                {% elif item.clay_id_2==c1.id%}
-                    {% if item.clay_id_1==c2.id%}
-                        {% if item.picture%}
-                                <img style="width:180px"  src="{{ url_for('images', image=item.picture)}}">
+                {% elif item.glaze_id_2==g1.id%}
+                    {% if item.glaze_id_1==g2.id%}
+                        {% if item.image_name%}
+                                <img style="width:180px"  src="{{ url_for('images', image=item.image_name)}}">
                                 <br> {{ item.name }}
                         {% else %}
                             <p><b>{{ item.name }}</b></p>
