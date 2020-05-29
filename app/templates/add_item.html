@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Register</h1>
+<form enctype="multipart/form-data" action="" method="post">
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.name.label }}<br>
+        {{ form.name(size=32) }}<br>
+        {% for error in form.name.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.clay_id_1.label }}<br>
+        {{ form.clay_id_1(size=1) }}<br>
+        {% for error in form.clay_id_1.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.clay_id_2.label }}<br>
+        {{ form.clay_id_2(size=1) }}<br>
+        {% for error in form.clay_id_2.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.picture.label }}<br>
+        {{ form.picture }}<br>
+        {% for error in form.picture.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+
+    <p>{{ form.submit() }}</p>
+</form>
+{% endblock %}

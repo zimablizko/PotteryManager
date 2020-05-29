@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Obrazec Manager 2020!</h1>
+
+<table>
+    <tr>
+        <td></td>
+        {% for c in clays %}
+        <td><b>{{ c.name }}</b></td>
+        {% endfor %}
+    </tr>
+    {% for c1 in clays %}
+    <tr>
+        <td>
+            <b>{{ c1.name }}</b>
+        </td>
+        {% for c2 in clays %}
+        <td>
+            {% include '_table_item.html' %}
+        </td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}
