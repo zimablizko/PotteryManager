@@ -1,29 +1,22 @@
             {% for item in items %}
-                {% if item.glaze_id_2==item.glaze_id_1%}
-                    {% if item.glaze_id_1==g1.id%}
-                        {% if item.glaze_id_2==g2.id%}
+                {% if item.glazes[1]==item.glazes[0]%}
+                    {% if item.glazes[0]==g1.id%}
+                        {% if item.glazes[1]==g2.id%}
                             {% if item.image_name%}
-                                <img style="width:180px" src="{{ url_for('images', image=item.image_name)}}">
-                                <br> {{ item.name }}
+                                <a data-lightbox="{{ item.image_name }}" href="{{ url_for('images', image=item.image_name)}}">
+                                    <img style="width:180px"  src="{{ url_for('images', image=item.image_name)}}">
+                                </a>
                             {% else %}
                                 <p><b>{{ item.name }}</b></p>
                             {% endif %}
                         {% endif %}
                     {% endif %}
-                {% elif item.glaze_id_1==g1.id%}
-                    {% if item.glaze_id_2==g2.id%}
+                {% elif item.glazes[0]==g1.id%}
+                    {% if item.glazes[1]==g2.id%}
                         {% if item.image_name%}
-                                <img style="width:180px"  src="{{ url_for('images', image=item.image_name)}}">
-                                <br> {{ item.name }}
-                        {% else %}
-                            <p><b>{{ item.name }}</b></p>
-                        {% endif %}
-                    {% endif %}
-                {% elif item.glaze_id_2==g1.id%}
-                    {% if item.glaze_id_1==g2.id%}
-                        {% if item.image_name%}
-                                <img style="width:180px"  src="{{ url_for('images', image=item.image_name)}}">
-                                <br> {{ item.name }}
+                             <a data-lightbox="{{ item.image_name }}" href="{{ url_for('images', image=item.image_name)}}">
+                                <img style="width:180px" data-lightbox="{{item.image_name}}"  src="{{ url_for('images', image=item.image_name)}}">
+                             </a>
                         {% else %}
                             <p><b>{{ item.name }}</b></p>
                         {% endif %}

@@ -13,3 +13,4 @@ from app import routes, models
 
 #print('Recreating all db')
 #db.create_all()
+

@@ -3,7 +3,8 @@ from sqlalchemy.orm import relationship
 
 from app import db
 
-#=Base = declarative_base()
+
+# =Base = declarative_base()
 
 class Clay(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -28,14 +29,25 @@ class Surface(db.Model):
     def __repr__(self):
         return 'Surface {}'.format(self.name)
 
+
+class ItemGlaze(db.Model):
+     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+     glaze_id = db.Column(db.Integer, db.ForeignKey('glaze.id'))
+     item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
+     order = db.Column(db.Integer)
+
+
 class Item(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    name = db.Column(db.String(64), index=True, unique=True)
-    glaze_id_1 = db.Column(db.Integer, db.ForeignKey('glaze.id'))
-    glaze_id_2 = db.Column(db.Integer, db.ForeignKey('glaze.id'))
+    name = db.Column(db.String(64))
+    description = db.Column(db.Text(512))
     clay_id = db.Column(db.Integer, db.ForeignKey('clay.id'))
     surface_id = db.Column(db.Integer, db.ForeignKey('surface.id'))
+    temperature = db.Column(db.Integer)
     image_name = db.Column(db.String(256))
 
     def __repr__(self):
         return 'Item {}, {}'.format(self.name, self.image_name)
+
+
+#db.create_all()
