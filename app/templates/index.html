@@ -6,11 +6,11 @@
     <div class="form-row">
     <div class="form-group col-md-4">
         {{ form.clay_filter.label }}
-        {{ form.clay_filter }}
+        {{ form.clay_filter( class="browser-default custom-select") }}
     </div>
     <div class="form-group col-md-4">
         {{ form.surface_filter.label }}
-        {{ form.surface_filter }}
+        {{ form.surface_filter( class="browser-default custom-select") }}
     </div>
     </div>
     {{ form.submit(class="btn btn-primary mb-2") }}
@@ -21,16 +21,16 @@
 <table class="table table-bordered">
     <tr>
         <th></th>
-        {% for g in glazes %}
+        {% for g in form.glazes %}
         <th scope="col"><b>{{ g.name }}</b></th>
         {% endfor %}
     </tr>
-    {% for g1 in glazes %}
+    {% for g1 in form.glazes %}
     <tr>
         <th scope="row">
             <b>{{ g1.name }}</b>
         </th>
-        {% for g2 in glazes %}
+        {% for g2 in form.glazes %}
         <td>
             {% include '_table_item.html' %}
         </td>

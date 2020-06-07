@@ -1,29 +1,45 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileRequired
+from sqlalchemy import select
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, FileField, RadioField, \
     IntegerField, TextAreaField, SelectMultipleField
 from wtforms.validators import DataRequired, ValidationError, Optional, length
 
-from app.models import Item, Clay, Surface, Glaze
+from app.models import Item, Clay, Surface, Glaze, ItemGlaze
 from app.utils import MultiCheckboxField
 
 
-class MainForm(FlaskForm):
-    clays = [(c.id, c.name) for c in Clay.query.all()]
-    glazes = Glaze.query.order_by('id')
-    surfaces = [(c.id, c.name) for c in Surface.query.order_by('id')]
-    clay_filter = RadioField('Глина:', choices=clays, coerce=int)
-    surface_filter = RadioField('Поверхность:', choices=surfaces, coerce=int)
+class ListForm(FlaskForm):
+    def __init__(self, *args, **kwargs):
+        super(ListForm, self).__init__(*args, **kwargs)
+        glazes_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in Glaze.query.order_by('id')])
+        clays_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in Clay.query.order_by('id')])
+        surfaces_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in Surface.query.order_by('id')])
+        self.glaze_filter.choices = glazes_choices
+        self.clay_filter.choices = clays_choices
+        self.surface_filter.choices = surfaces_choices
+    glaze_filter = SelectField('Глазурь:', choices=None, coerce=int, validators=[Optional()])
+    clay_filter = SelectField('Глина:', choices=None, coerce=int, validators=[Optional()])
+    surface_filter = SelectField('Поверхность:', choices=None, coerce=int, validators=[Optional()])
     submit = SubmitField('Фильтр')
 
 
-class ListForm(FlaskForm):
-    clays = [(c.id, c.name) for c in Clay.query.all()]
-    glazes = [(c.id, c.name) for c in Glaze.query.order_by('id')]
-    surfaces = [(c.id, c.name) for c in Surface.query.order_by('id')]
-    glaze_filter = MultiCheckboxField('Глазурь:', choices=glazes, coerce=int, validators=[Optional()])
-    clay_filter = MultiCheckboxField('Глина:', choices=clays, coerce=int, validators=[Optional()])
-    surface_filter = MultiCheckboxField('Поверхность:', choices=surfaces, coerce=int, validators=[Optional()])
+class TableForm(FlaskForm):
+    def __init__(self, *args, **kwargs):
+        super(TableForm, self).__init__(*args, **kwargs)
+        glazes = Glaze.query.order_by('id')
+        glazes_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in glazes])
+        clays_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in Clay.query.order_by('id')])
+        surfaces_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in Surface.query.order_by('id')])
+        self.glazes = glazes
+        self.glaze_filter.choices = glazes_choices
+        self.clay_filter.choices = clays_choices
+        self.surface_filter.choices = surfaces_choices
+
+    glazes = None
+    glaze_filter = SelectField('Глазурь:', choices=None, coerce=int, validators=[Optional()])
+    clay_filter = SelectField('Глина:', choices=None, coerce=int, validators=[Optional()])
+    surface_filter = SelectField('Поверхность:', choices=None, coerce=int, validators=[Optional()])
     submit = SubmitField('Фильтр')
 
 
@@ -35,26 +51,39 @@ class LoginForm(FlaskForm):
 
 
 class AddItemForm(FlaskForm):
-    clays = [(c.id, c.name) for c in Clay.query.order_by('id')]
-    glazes = [(c.id, c.name) for c in Glaze.query.order_by('id')]
-    glazes_additional = ([(0, '_нет_')]).__add__(glazes)
-    surfaces = [(c.id, c.name) for c in Surface.query.order_by('id')]
+    def __init__(self, item_id, *args, **kwargs):
+        super(AddItemForm, self).__init__(*args, **kwargs)
+        glazes_choices = [(c.id, c.name) for c in Glaze.query.order_by('id')]
+        glazes_additional_choices = ([(0, '_нет_')]).__add__(glazes_choices)
+        clays_choices = [(c.id, c.name) for c in Clay.query.order_by('id')]
+        surfaces_choices = [(c.id, c.name) for c in Surface.query.order_by('id')]
+        self.glaze_id_1.choices = glazes_choices
+        self.glaze_id_2.choices = glazes_additional_choices
+        self.glaze_id_3.choices = glazes_additional_choices
+        self.clay_id.choices = clays_choices
+        self.surface_id.choices = surfaces_choices
+
     name = StringField('Название пробника:', validators=[Optional()])
     description = TextAreaField('Описание:', validators=[Optional(), length(max=512)])
     temperature = IntegerField('Температура:', validators=[DataRequired()])
-    glaze_id_1 = SelectField('Глазурь 1:', choices=glazes, validate_choice=False,
+    glaze_id_1 = SelectField('Глазурь 1:', choices=None, validate_choice=False,
                              coerce=int)
-    glaze_id_2 = SelectField('Глазурь 2:', choices=glazes_additional, validate_choice=False,
+    glaze_id_2 = SelectField('Глазурь 2:', choices=None, validate_choice=False,
                              coerce=int)
-    glaze_id_3 = SelectField('Глазурь 3:', choices=glazes_additional, validate_choice=False,
+    glaze_id_3 = SelectField('Глазурь 3:', choices=None, validate_choice=False,
                              coerce=int)
-    clay_id = SelectField('Глина:', choices=clays, validate_choice=False, coerce=int)
-    surface_id = SelectField('Поверхность:', choices=surfaces, validate_choice=False,
+    clay_id = SelectField('Глина:', choices=None, validate_choice=False, coerce=int)
+    surface_id = SelectField('Поверхность:', choices=None, validate_choice=False,
                              coerce=int)
-    image = FileField(u'Фото:', validators=[FileRequired(), FileAllowed(['jpeg', 'jpg', 'png'], 'Images only!')])
+    image = FileField(u'Фото:', validators=[FileAllowed(['jpeg', 'jpg', 'png'], 'Images only!')])
     submit = SubmitField('Добавить')
 
-    # def validate_name(self, name):
-    #     item = Item.query.filter_by(name=name.data).first()
-    #     if item is not None:
-    #         raise ValidationError('Please use a different username.')
+
+class AddGlazeForm(FlaskForm):
+    name = StringField('Название глазури:', validators=[DataRequired()])
+    submit = SubmitField('Добавить')
+
+
+class AddClayForm(FlaskForm):
+    name = StringField('Название глины:', validators=[DataRequired()])
+    submit = SubmitField('Добавить')

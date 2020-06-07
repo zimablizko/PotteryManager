@@ -31,10 +31,10 @@ class Surface(db.Model):
 
 
 class ItemGlaze(db.Model):
-     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-     glaze_id = db.Column(db.Integer, db.ForeignKey('glaze.id'))
-     item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
-     order = db.Column(db.Integer)
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    glaze_id = db.Column(db.Integer, db.ForeignKey('glaze.id'))
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
+    order = db.Column(db.Integer)
 
 
 class Item(db.Model):
@@ -49,5 +49,4 @@ class Item(db.Model):
     def __repr__(self):
         return 'Item {}, {}'.format(self.name, self.image_name)
 
-
-#db.create_all()
+# db.create_all()
