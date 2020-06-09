@@ -1,20 +1,20 @@
+from flask_login import current_user
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileRequired
 from sqlalchemy import select
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, FileField, RadioField, \
     IntegerField, TextAreaField, SelectMultipleField
-from wtforms.validators import DataRequired, ValidationError, Optional, length
+from wtforms.validators import DataRequired, ValidationError, Optional, length, EqualTo, Email
 
-from app.models import Item, Clay, Surface, Glaze, ItemGlaze
-from app.utils import MultiCheckboxField
+from app.models import Item, Clay, Surface, Glaze, ItemGlaze, User
 
 
 class ListForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(ListForm, self).__init__(*args, **kwargs)
-        glazes_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in Glaze.query.order_by('id')])
-        clays_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in Clay.query.order_by('id')])
-        surfaces_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in Surface.query.order_by('id')])
+        glazes_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_materials(Glaze)])
+        clays_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_materials(Clay)])
+        surfaces_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_surfaces()])
         self.glaze_filter.choices = glazes_choices
         self.clay_filter.choices = clays_choices
         self.surface_filter.choices = surfaces_choices
@@ -27,10 +27,10 @@ class ListForm(FlaskForm):
 class TableForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(TableForm, self).__init__(*args, **kwargs)
-        glazes = Glaze.query.order_by('id')
+        glazes = current_user.get_materials(Glaze)
         glazes_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in glazes])
-        clays_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in Clay.query.order_by('id')])
-        surfaces_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in Surface.query.order_by('id')])
+        clays_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_materials(Clay)])
+        surfaces_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_surfaces()])
         self.glazes = glazes
         self.glaze_filter.choices = glazes_choices
         self.clay_filter.choices = clays_choices
@@ -43,20 +43,13 @@ class TableForm(FlaskForm):
     submit = SubmitField('Фильтр')
 
 
-class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    remember_me = BooleanField('Remember Me')
-    submit = SubmitField('Sign In')
-
-
 class AddItemForm(FlaskForm):
     def __init__(self, item_id, *args, **kwargs):
         super(AddItemForm, self).__init__(*args, **kwargs)
-        glazes_choices = [(c.id, c.name) for c in Glaze.query.order_by('id')]
+        glazes_choices = [(c.id, c.name) for c in current_user.get_materials(Glaze)]
         glazes_additional_choices = ([(0, '_нет_')]).__add__(glazes_choices)
-        clays_choices = [(c.id, c.name) for c in Clay.query.order_by('id')]
-        surfaces_choices = [(c.id, c.name) for c in Surface.query.order_by('id')]
+        clays_choices = [(c.id, c.name) for c in current_user.get_materials(Clay)]
+        surfaces_choices = [(c.id, c.name) for c in current_user.get_surfaces()]
         self.glaze_id_1.choices = glazes_choices
         self.glaze_id_2.choices = glazes_additional_choices
         self.glaze_id_3.choices = glazes_additional_choices
@@ -87,3 +80,29 @@ class AddGlazeForm(FlaskForm):
 class AddClayForm(FlaskForm):
     name = StringField('Название глины:', validators=[DataRequired()])
     submit = SubmitField('Добавить')
+
+
+class LoginForm(FlaskForm):
+    username = StringField('Имя пользователя', validators=[DataRequired()])
+    password = PasswordField('Пароль', validators=[DataRequired()])
+    remember_me = BooleanField('Запомнить меня')
+    submit = SubmitField('Войти')
+
+
+class RegistrationForm(FlaskForm):
+    username = StringField('Имя пользователя', validators=[DataRequired()])
+    email = StringField('E-mail', validators=[DataRequired(), Email()])
+    password = PasswordField('Пароль', validators=[DataRequired()])
+    password2 = PasswordField(
+        'Снова пароль', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Зарегистрироваться')
+
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user is not None:
+            raise ValidationError('Такое имя уже используется.')
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user is not None:
+            raise ValidationError('Такой адрес уже используется.')

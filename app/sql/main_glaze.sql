@@ -1,9 +1,0 @@
-INSERT INTO glaze (id, name) VALUES (1, 'Глазурь1');
-INSERT INTO glaze (id, name) VALUES (2, 'Глазурь2');
-INSERT INTO glaze (id, name) VALUES (3, 'Глазурь3');
-INSERT INTO glaze (id, name) VALUES (4, 'Глазурь4');
-INSERT INTO glaze (id, name) VALUES (5, 'Глазурь5');
-INSERT INTO glaze (id, name) VALUES (6, 'Глазурь6');
-INSERT INTO glaze (id, name) VALUES (7, 'Глазурь7');
-INSERT INTO glaze (id, name) VALUES (8, 'Глазурь8');
-INSERT INTO glaze (id, name) VALUES (9, 'Глазурь9');

@@ -1,25 +1,28 @@
 import os
 
 from flask import render_template, flash, redirect, url_for, request, send_from_directory
+from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy import func
 from sqlalchemy.sql.functions import count
+from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 from wtforms import SelectField
 from wtforms.validators import Optional
 
 from app import app, db
-from app.forms import LoginForm, AddItemForm, ListForm, AddGlazeForm, AddClayForm, TableForm
-from app.models import Clay, Item, Surface, Glaze, ItemGlaze
+from app.forms import LoginForm, AddItemForm, ListForm, AddGlazeForm, AddClayForm, TableForm, RegistrationForm
+from app.models import Clay, Item, Surface, Glaze, ItemGlaze, User
 
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
 @app.route('/list', methods=['GET', 'POST'])
+@login_required
 def index():
     form = ListForm()
     if form.validate_on_submit():
         print(form.glaze_filter.data)
-        items = Item.query.order('id')
+        items = current_user.get_items()
         if form.clay_filter.data > 0:
             items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
         if form.surface_filter.data > 0:
@@ -29,7 +32,7 @@ def index():
         print(items)
         items = items.all()
     else:
-        items = Item.query.all()
+        items = current_user.get_items()
     return render_template('list.html', form=form, title='Все пробники', items=items)
 
 
@@ -37,27 +40,18 @@ def index():
 def table():
     form = TableForm()
     if form.validate_on_submit():
-        items = Item.query
+        items = current_user.get_items()
         if form.clay_filter.data > 0:
             items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
         if form.surface_filter.data > 0:
             items = items.filter(Item.surface_id.__eq__(form.surface_filter.data))
         items = items.all()
     else:
-        items = Item.query.all()
+        items = current_user.get_items()
     for item in items:
         item.glazes = [g.glaze_id for g in
                        db.session.query(ItemGlaze).filter_by(item_id=item.id).order_by('order').all()]
     return render_template('index.html', form=form, title='Таблица смешивания', items=items)
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        flash('Login requested for user {}, remember_me={}'.format(form.username.data, form.remember_me.data))
-        return redirect(url_for('index'))
-    return render_template('login.html', title='Sign In', form=form)
 
 
 @app.route('/add_item', methods=['GET', 'POST'])
@@ -65,7 +59,7 @@ def add_item():
     form = AddItemForm(None)
     if form.validate_on_submit():
         item = Item(name=form.name.data, description=form.description.data, clay_id=form.clay_id.data,
-                    surface_id=form.surface_id.data,
+                    surface_id=form.surface_id.data, user_id=current_user.id,
                     temperature=form.temperature.data)
         if form.image.data:
             file = request.files['image']
@@ -184,24 +178,64 @@ def delete_item(item_id):
 def add_glaze():
     form = AddGlazeForm()
     if form.validate_on_submit():
-        glaze = Glaze(name=form.name.data)
+        glaze = Glaze(name=form.name.data, user_id=current_user.id)
         db.session.add(glaze)
         db.session.commit()
         return redirect(url_for('index'))
-    return render_template('add_glaze.html', title='Добавление/изменение глазури', form=form)
+    return render_template('add_glaze.html', title='Добавление глазури', form=form)
 
 
 @app.route('/add_clay', methods=['GET', 'POST'])
 def add_clay():
     form = AddClayForm()
     if form.validate_on_submit():
-        clay = Clay(name=form.name.data)
+        clay = Clay(name=form.name.data, user_id=current_user.id)
         db.session.add(clay)
         db.session.commit()
         return redirect(url_for('index'))
-    return render_template('add_clay.html', title='Добавление/изменение глины', form=form)
+    return render_template('add_clay.html', title='Добавление глины', form=form)
 
 
+# ----------- USER STUFF ----------- #
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user is None or not user.check_password(form.password.data):
+            flash('Invalid username or password')
+            return redirect(url_for('login'))
+        login_user(user, remember=form.remember_me.data)
+        next_page = request.args.get('next')
+        if not next_page or url_parse(next_page).netloc != '':
+            next_page = url_for('index')
+        return redirect(next_page)
+    return render_template('login.html', title='Sign In', form=form)
+
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('Congratulations, you are now a registered user!')
+        return redirect(url_for('login'))
+    return render_template('register.html', title='Register', form=form)
+
+# ----------- OTHER STUFF ----------- #
 @app.route('/images/<image>')
 def images(image):
     return send_from_directory(app.config['UPLOAD_FOLDER'], image)

@@ -1,0 +1,1 @@
+INSERT INTO user (id, username, email, password_hash) VALUES (1, 'admin', 'nklv92@gmail.com', 'pbkdf2:sha256:150000$z4qGj8Tj$0aa4f7df3e240b29f9e844f958e8e92033776bead5e9128fddd21659f3cc78c0');
