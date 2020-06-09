@@ -2,6 +2,7 @@ import os
 
 from flask import render_template, flash, redirect, url_for, request, send_from_directory
 from sqlalchemy import func
+from sqlalchemy.sql.functions import count
 from werkzeug.utils import secure_filename
 from wtforms import SelectField
 from wtforms.validators import Optional
@@ -91,7 +92,7 @@ def add_item():
         db.session.commit()
         flash('Item {} added!'.format(form.name.data))
         return redirect(url_for('index'))
-    return render_template('add_item.html', title='Добавление/изменение пробника', form=form)
+    return render_template('add_item.html', title='Добавление пробника', form=form)
 
 
 @app.route('/edit_item/<item_id>', methods=['GET', 'POST'])
@@ -144,6 +145,7 @@ def edit_item(item_id):
     elif request.method == 'GET':
         print("INIT  " + str(item_id))
         item = Item.query.filter_by(id=item_id).one()
+        form.id = item.id
         glaze_1 = ItemGlaze.query.filter_by(item_id=item.id).filter_by(order=0).order_by('order').one_or_none()
         glaze_2 = ItemGlaze.query.filter_by(item_id=item.id).filter_by(order=1).order_by('order').one_or_none()
         glaze_3 = ItemGlaze.query.filter_by(item_id=item.id).filter_by(order=2).order_by('order').one_or_none()
@@ -160,7 +162,22 @@ def edit_item(item_id):
         form.surface_id.data = item.surface_id
         form.image.data = item.image_name
         form.submit.label.text = 'Изменить'
-    return render_template('add_item.html', title='Добавление/изменение пробника', form=form)
+    return render_template('add_item.html', title='Изменение пробника', form=form)
+
+
+@app.route('/delete_item/<item_id>', methods=['GET', 'POST'])
+def delete_item(item_id):
+    item = db.session.query(Item).filter(Item.id == item_id).one()
+    if item:
+        print(item)
+        item_glazes = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).all()
+        print(item_glazes)
+        if len(item_glazes) > 0:
+            for item_glaze in item_glazes:
+                db.session.delete(item_glaze)
+        db.session.delete(item)
+        db.session.commit()
+    return redirect(url_for('index'))
 
 
 @app.route('/add_glaze', methods=['GET', 'POST'])
