@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from flask import render_template, flash, redirect, url_for, request, send_from_directory
 from flask_login import current_user, login_user, logout_user, login_required
@@ -33,6 +34,8 @@ def index():
         items = items.all()
     else:
         items = current_user.get_items()
+        for item in items:
+            print(item.delete_date)
     return render_template('list.html', form=form, title='Все пробники', items=items)
 
 
@@ -163,13 +166,12 @@ def edit_item(item_id):
 def delete_item(item_id):
     item = db.session.query(Item).filter(Item.id == item_id).one()
     if item:
-        print(item)
-        item_glazes = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).all()
-        print(item_glazes)
-        if len(item_glazes) > 0:
-            for item_glaze in item_glazes:
-                db.session.delete(item_glaze)
-        db.session.delete(item)
+        # item_glazes = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).all()
+        # if len(item_glazes) > 0:
+        #     for item_glaze in item_glazes:
+        #         db.session.delete(item_glaze)
+        # db.session.delete(item)
+        item.delete_date = datetime.utcnow()
         db.session.commit()
     return redirect(url_for('index'))
 

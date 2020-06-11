@@ -82,7 +82,7 @@ class User(UserMixin, db.Model):
         return Surface.query.order_by('id')
 
     def get_items(self):
-        return Item.query.filter_by(user_id=self.id).order_by('id')
+        return Item.query.filter_by(user_id=self.id).filter(Item.delete_date == None).order_by('id')
 
     def get_materials(self, table):
         return table.query.filter_by(user_id=self.id).order_by('id')
