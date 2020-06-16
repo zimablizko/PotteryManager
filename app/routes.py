@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from flask import render_template, flash, redirect, url_for, request, send_from_directory
 from flask_login import current_user, login_user, logout_user, login_required
@@ -10,7 +11,7 @@ from wtforms import SelectField
 from wtforms.validators import Optional
 
 from app import app, db
-from app.forms import LoginForm, AddItemForm, ListForm, AddGlazeForm, AddClayForm, TableForm, RegistrationForm
+from app.forms import LoginForm, AddItemForm, ListForm, AddGlazeForm, AddClayForm, TableForm, RegistrationForm, ItemForm
 from app.models import Clay, Item, Surface, Glaze, ItemGlaze, User
 
 
@@ -33,6 +34,8 @@ def index():
         items = items.all()
     else:
         items = current_user.get_items()
+        for item in items:
+            print(item.delete_date)
     return render_template('list.html', form=form, title='Все пробники', items=items)
 
 
@@ -53,6 +56,14 @@ def table():
                        db.session.query(ItemGlaze).filter_by(item_id=item.id).order_by('order').all()]
     return render_template('index.html', form=form, title='Таблица смешивания', items=items)
 
+
+@app.route('/item/<item_id>', methods=['GET', 'POST'])
+def item(item_id):
+    form = ItemForm(item_id)
+    item = db.session.query(Item).filter(Item.id == item_id).one()
+    if not item.is_public and (current_user.is_anonymous or current_user.id != item.user_id):
+        return render_template('error.html', error="Ошибка доступа")
+    return render_template('item.html', form=form, item=item)
 
 @app.route('/add_item', methods=['GET', 'POST'])
 def add_item():
@@ -163,13 +174,12 @@ def edit_item(item_id):
 def delete_item(item_id):
     item = db.session.query(Item).filter(Item.id == item_id).one()
     if item:
-        print(item)
-        item_glazes = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).all()
-        print(item_glazes)
-        if len(item_glazes) > 0:
-            for item_glaze in item_glazes:
-                db.session.delete(item_glaze)
-        db.session.delete(item)
+        # item_glazes = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).all()
+        # if len(item_glazes) > 0:
+        #     for item_glaze in item_glazes:
+        #         db.session.delete(item_glaze)
+        # db.session.delete(item)
+        item.delete_date = datetime.utcnow()
         db.session.commit()
     return redirect(url_for('index'))
 

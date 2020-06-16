@@ -58,6 +58,7 @@ class Item(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     create_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     delete_date = db.Column(db.DateTime, index=True)
+    is_public = db.Column(db.Boolean)
 
     def __repr__(self):
         return 'Item {}, {}'.format(self.name, self.image_name)
@@ -82,7 +83,7 @@ class User(UserMixin, db.Model):
         return Surface.query.order_by('id')
 
     def get_items(self):
-        return Item.query.filter_by(user_id=self.id).order_by('id')
+        return Item.query.filter_by(user_id=self.id).filter(Item.delete_date == None).order_by('id')
 
     def get_materials(self, table):
         return table.query.filter_by(user_id=self.id).order_by('id')
