@@ -1,5 +1,13 @@
             {% for item in items %}
-                {% if item.glazes[1]==item.glazes[0]%}
+                {% if item.glazes.__len__()==1 and item.glazes[0]==g1.id and item.glazes[0]==g2.id %}
+                        {% if item.image_name%}
+                             <a data-lightbox="{{ item.image_name }}" href="{{ url_for('images', image=item.image_name)}}">
+                                <img style="width:180px" data-lightbox="{{item.image_name}}"  src="{{ url_for('images', image=item.image_name)}}">
+                             </a>
+                        {% else %}
+                            <p><b>{{ item.name }}</b></p>
+                        {% endif %}
+                {% elif item.glazes[1]==item.glazes[0]%}
                     {% if item.glazes[0]==g1.id%}
                         {% if item.glazes[1]==g2.id%}
                             {% if item.image_name%}

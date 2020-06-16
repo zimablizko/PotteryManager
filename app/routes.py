@@ -22,7 +22,6 @@ from app.models import Clay, Item, Surface, Glaze, ItemGlaze, User
 def index():
     form = ListForm()
     if form.validate_on_submit():
-        print(form.glaze_filter.data)
         items = current_user.get_items()
         if form.clay_filter.data > 0:
             items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
@@ -30,12 +29,9 @@ def index():
             items = items.filter(Item.surface_id.__eq__(form.surface_filter.data))
         if form.glaze_filter.data > 0:
             items = items.join(ItemGlaze).filter(ItemGlaze.glaze_id.__eq__(form.glaze_filter.data))
-        print(items)
         items = items.all()
     else:
-        items = current_user.get_items()
-        for item in items:
-            print(item.delete_date)
+        items = current_user.get_items().all()
     return render_template('list.html', form=form, title='Все пробники', items=items)
 
 
@@ -50,7 +46,7 @@ def table():
             items = items.filter(Item.surface_id.__eq__(form.surface_filter.data))
         items = items.all()
     else:
-        items = current_user.get_items()
+        items = current_user.get_items().all()
     for item in items:
         item.glazes = [g.glaze_id for g in
                        db.session.query(ItemGlaze).filter_by(item_id=item.id).order_by('order').all()]
@@ -71,7 +67,7 @@ def add_item():
     if form.validate_on_submit():
         item = Item(name=form.name.data, description=form.description.data, clay_id=form.clay_id.data,
                     surface_id=form.surface_id.data, user_id=current_user.id,
-                    temperature=form.temperature.data)
+                    temperature=form.temperature.data, is_public=form.is_public.data)
         if form.image.data:
             file = request.files['image']
             filename = secure_filename(file.filename)
@@ -114,9 +110,9 @@ def edit_item(item_id):
         item_glaze_1 = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).filter(
             ItemGlaze.order == 0).one_or_none()
         item_glaze_1.glaze_id = form.glaze_id_1.data
+        item_glaze_2 = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).filter(
+            ItemGlaze.order == 1).one_or_none()
         if form.glaze_id_2.data > 0:
-            item_glaze_2 = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).filter(
-                ItemGlaze.order == 1).one_or_none()
             if item_glaze_2:
                 item_glaze_2.glaze_id = form.glaze_id_2.data
             else:
@@ -124,9 +120,12 @@ def edit_item(item_id):
                 db.session.add(item_glaze_2)
             if not form.name.data:
                 item.name += ' + ' + db.session.query(Glaze).filter_by(id=form.glaze_id_2.data).first().name
+        else:
+            if item_glaze_2:
+                db.session.delete(item_glaze_2)
+        item_glaze_3 = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).filter(
+                    ItemGlaze.order == 2).one_or_none()
         if form.glaze_id_3.data > 0:
-            item_glaze_3 = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).filter(
-                ItemGlaze.order == 2).one_or_none()
             if item_glaze_3:
                 item_glaze_3.glaze_id = form.glaze_id_3.data
             else:
@@ -134,10 +133,14 @@ def edit_item(item_id):
                 db.session.add(item_glaze_3)
             if not form.name.data:
                 item.name += ' + ' + db.session.query(Glaze).filter_by(id=form.glaze_id_3.data).first().name
+        else:
+            if item_glaze_3:
+                db.session.delete(item_glaze_3)
         item.description = form.description.data
         item.temperature = form.temperature.data
         item.clay_id = form.clay_id.data
         item.surface_id = form.surface_id.data
+        item.is_public = form.is_public.data
         if form.image.data:
             file = request.files['image']
             filename = secure_filename(file.filename)
@@ -157,6 +160,7 @@ def edit_item(item_id):
         form.name.data = item.name
         form.description.data = item.description
         form.temperature.data = item.temperature
+        form.is_public.data = item.is_public
         if glaze_1:
             form.glaze_id_1.data = glaze_1.glaze_id
         if glaze_2:

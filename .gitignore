@@ -2,3 +2,4 @@
 /app/__pycache__/*
 *.pyc
 /.idea/*
+/app.db
