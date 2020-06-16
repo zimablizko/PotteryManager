@@ -43,6 +43,10 @@ class TableForm(FlaskForm):
     submit = SubmitField('Фильтр')
 
 
+class ItemForm(FlaskForm):
+    submit = SubmitField('Фильтр')
+
+
 class AddItemForm(FlaskForm):
     def __init__(self, item_id, *args, **kwargs):
         super(AddItemForm, self).__init__(*args, **kwargs)

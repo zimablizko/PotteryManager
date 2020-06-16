@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{item.name}}</h1>
+
+        {% if item.image_name%}
+        <a data-lightbox="{{ item.image_name }}" href="{{ url_for('images', image=item.image_name)}}">
+            <img class="card-img-top" src="{{ url_for('images', image=item.image_name)}}">
+        </a>
+        {% else %}
+        <p><b>Нет изображения</b></p>
+        {% endif %}
+            <h5 class="card-title">{{ item.name }}</h5>
+            <p class="card-text">{{ item.description }}</p>
+            <p class="card-text">Температура: {{ item.temperature }}</p>
+            {% if item.user_id==current_user.id  %}
+            <a href="{{ url_for('edit_item', item_id=item.id)}}" class="btn btn-sm btn-success">Изменить</a>
+            {% endif %}
+
+{% endblock %}

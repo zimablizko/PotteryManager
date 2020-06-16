@@ -11,7 +11,7 @@ from wtforms import SelectField
 from wtforms.validators import Optional
 
 from app import app, db
-from app.forms import LoginForm, AddItemForm, ListForm, AddGlazeForm, AddClayForm, TableForm, RegistrationForm
+from app.forms import LoginForm, AddItemForm, ListForm, AddGlazeForm, AddClayForm, TableForm, RegistrationForm, ItemForm
 from app.models import Clay, Item, Surface, Glaze, ItemGlaze, User
 
 
@@ -56,6 +56,14 @@ def table():
                        db.session.query(ItemGlaze).filter_by(item_id=item.id).order_by('order').all()]
     return render_template('index.html', form=form, title='Таблица смешивания', items=items)
 
+
+@app.route('/item/<item_id>', methods=['GET', 'POST'])
+def item(item_id):
+    form = ItemForm(item_id)
+    item = db.session.query(Item).filter(Item.id == item_id).one()
+    if not item.is_public and (current_user.is_anonymous or current_user.id != item.user_id):
+        return render_template('error.html', error="Ошибка доступа")
+    return render_template('item.html', form=form, item=item)
 
 @app.route('/add_item', methods=['GET', 'POST'])
 def add_item():

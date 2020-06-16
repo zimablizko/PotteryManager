@@ -58,6 +58,7 @@ class Item(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     create_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     delete_date = db.Column(db.DateTime, index=True)
+    is_public = db.Column(db.Boolean)
 
     def __repr__(self):
         return 'Item {}, {}'.format(self.name, self.image_name)
