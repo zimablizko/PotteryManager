@@ -1,19 +1,27 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>{{item.name}}</h1>
 
-        {% if item.image_name%}
-        <a data-lightbox="{{ item.image_name }}" href="{{ url_for('images', image=item.image_name)}}">
-            <img class="card-img-top" src="{{ url_for('images', image=item.image_name)}}">
-        </a>
-        {% else %}
-        <p><b>Нет изображения</b></p>
-        {% endif %}
+<div class="container">
+    <h1>{{item.name}}</h1>
+    <div class="row">
+        <div class="col-md-8 col-12">
+
+            {% if item.image_name%}
+            <a data-lightbox="{{ item.image_name }}" href="{{ url_for('images', image=item.image_name)}}">
+                <img class="card-img-top" src="{{ url_for('images', image=item.image_name)}}">
+            </a>
+            {% else %}
+            <p><b>Нет изображения</b></p>
+            {% endif %}
+        </div>
+        <div class="col-md-4 col-12">
             <h5 class="card-title">{{ item.name }}</h5>
             <p class="card-text">{{ item.description }}</p>
             <p class="card-text">Температура: {{ item.temperature }}</p>
-            {% if item.user_id==current_user.id  %}
+            {% if item.user_id==current_user.id %}
             <a href="{{ url_for('edit_item', item_id=item.id)}}" class="btn btn-sm btn-success">Изменить</a>
             {% endif %}
-
+        </div>
+    </div>
+</div>
 {% endblock %}
