@@ -60,18 +60,18 @@
         {% endif %}
     </div>
 </nav>
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-<ul>
-    {% for message in messages %}
-    <li>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
-{% endwith %}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-info" role="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
 <div class="container">
     {% block content %}{% endblock %}
 </div>
+
 <script src="{{ url_for('static', filename='css/lightbox2-2.11.1/js/lightbox-plus-jquery.js') }}"></script>
 <!-- JS, Popper.js, and jQuery -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
