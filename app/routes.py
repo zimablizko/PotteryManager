@@ -76,7 +76,8 @@ def add_item():
         if not form.name.data:
             item.name = db.session.query(Clay).filter_by(id=item.clay_id).first().name + ': ' \
                         + db.session.query(Glaze).filter_by(id=form.glaze_id_1.data).first().name
-        max_id = db.session.query(func.max(Item.id)).scalar() + 1
+        db.session.add(item)
+        max_id = db.session.query(func.max(Item.id)).scalar()
         item_glaze = ItemGlaze(glaze_id=form.glaze_id_1.data, item_id=max_id, order=0)
         db.session.add(item_glaze)
         if form.glaze_id_2.data > 0:
@@ -89,7 +90,6 @@ def add_item():
             db.session.add(item_glaze_3)
             if not form.name.data:
                 item.name += ' + ' + db.session.query(Glaze).filter_by(id=form.glaze_id_3.data).first().name
-        db.session.add(item)
         db.session.commit()
         flash('Item {} added!'.format(form.name.data))
         return redirect(url_for('index'))
