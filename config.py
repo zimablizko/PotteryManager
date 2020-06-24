@@ -6,4 +6,5 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'app.db?check_same_thread=False')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    UPLOAD_FOLDER = os.path.dirname(__file__) + r'/app/images'
+    IMAGE_FOLDER = os.path.dirname(__file__) + r'/app/images'
+    THUMBNAIL_FOLDER = os.path.dirname(__file__) + r'/app/thumbnails'
