@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+from PIL import Image
 from flask import render_template, flash, redirect, url_for, request, send_from_directory
 from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy import func
@@ -71,8 +72,11 @@ def add_item():
         if form.image.data:
             file = request.files['image']
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file.save(os.path.join(app.config['IMAGE_FOLDER'], filename))
             item.image_name = filename
+            image = Image.open(os.path.join(app.config['IMAGE_FOLDER'], item.image_name))
+            image.thumbnail((400, 400))
+            image.save(os.path.join(app.config['THUMBNAIL_FOLDER'], item.image_name))
         if not form.name.data:
             item.name = db.session.query(Clay).filter_by(id=item.clay_id).first().name + ': ' \
                         + db.session.query(Glaze).filter_by(id=form.glaze_id_1.data).first().name
@@ -91,7 +95,7 @@ def add_item():
             if not form.name.data:
                 item.name += ' + ' + db.session.query(Glaze).filter_by(id=form.glaze_id_3.data).first().name
         db.session.commit()
-        flash('Item {} added!'.format(form.name.data))
+        flash('Пробник {} добавлен!'.format(item.name))
         return redirect(url_for('index'))
     return render_template('add_item.html', title='Добавление пробника', form=form)
 
@@ -144,8 +148,11 @@ def edit_item(item_id):
         if form.image.data:
             file = request.files['image']
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file.save(os.path.join(app.config['IMAGE_FOLDER'], filename))
             item.image_name = filename
+            image = Image.open(os.path.join(app.config['IMAGE_FOLDER'], item.image_name))
+            image.thumbnail((400, 400))
+            image.save(os.path.join(app.config['THUMBNAIL_FOLDER'], item.image_name))
         print(form.name.data)
         print(item)
         db.session.commit()
@@ -252,4 +259,8 @@ def register():
 # ----------- OTHER STUFF ----------- #
 @app.route('/images/<image>')
 def images(image):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], image)
+    return send_from_directory(app.config['IMAGE_FOLDER'], image)\
+
+@app.route('/thumbnails/<image>')
+def thumbnails(image):
+    return send_from_directory(app.config['THUMBNAIL_FOLDER'], image)

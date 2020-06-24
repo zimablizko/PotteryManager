@@ -3,3 +3,4 @@
 *.pyc
 /.idea/*
 /app.db
+/app/thumbnails/*

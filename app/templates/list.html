@@ -27,7 +27,7 @@
     <div class="card">
         {% if item.image_name%}
         <a data-lightbox="{{ item.image_name }}" href="{{ url_for('images', image=item.image_name)}}">
-            <img class="card-img-top" src="{{ url_for('images', image=item.image_name)}}">
+            <img class="card-img-top" src="{{ url_for('thumbnails', image=item.image_name)}}">
         </a>
         {% else %}
         <p><b>Нет изображения</b></p>
