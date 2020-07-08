@@ -1,4 +1,6 @@
 import os
+import random
+import string
 from datetime import datetime
 
 from PIL import Image
@@ -70,13 +72,7 @@ def add_item():
                     surface_id=form.surface_id.data, user_id=current_user.id,
                     temperature=form.temperature.data, is_public=form.is_public.data)
         if form.image.data:
-            file = request.files['image']
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['IMAGE_FOLDER'], filename))
-            item.image_name = filename
-            image = Image.open(os.path.join(app.config['IMAGE_FOLDER'], item.image_name))
-            image.thumbnail((800, 800))
-            image.save(os.path.join(app.config['THUMBNAIL_FOLDER'], item.image_name))
+            save_image(request.files['image'], item)
         if not form.name.data:
             item.name = db.session.query(Clay).filter_by(id=item.clay_id).first().name + ': ' \
                         + db.session.query(Glaze).filter_by(id=form.glaze_id_1.data).first().name
@@ -146,13 +142,7 @@ def edit_item(item_id):
         item.surface_id = form.surface_id.data
         item.is_public = form.is_public.data
         if form.image.data:
-            file = request.files['image']
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['IMAGE_FOLDER'], filename))
-            item.image_name = filename
-            image = Image.open(os.path.join(app.config['IMAGE_FOLDER'], item.image_name))
-            image.thumbnail((800, 800))
-            image.save(os.path.join(app.config['THUMBNAIL_FOLDER'], item.image_name))
+            save_image(request.files['image'], item)
         print(form.name.data)
         print(item)
         db.session.commit()
@@ -264,3 +254,14 @@ def images(image):
 @app.route('/thumbnails/<image>')
 def thumbnails(image):
     return send_from_directory(app.config['THUMBNAIL_FOLDER'], image)
+
+
+def save_image(file, item):
+    filename = ''.join(random.choices(string.ascii_lowercase + string.digits, k=15)) + '.' + (
+        file.filename.split('.').pop())
+    print(filename)
+    file.save(os.path.join(app.config['IMAGE_FOLDER'], filename))
+    item.image_name = filename
+    image = Image.open(os.path.join(app.config['IMAGE_FOLDER'], item.image_name))
+    image.thumbnail((800, 800))
+    image.save(os.path.join(app.config['THUMBNAIL_FOLDER'], item.image_name))

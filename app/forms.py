@@ -60,7 +60,7 @@ class AddItemForm(FlaskForm):
         self.clay_id.choices = clays_choices
         self.surface_id.choices = surfaces_choices
 
-    name = StringField('Название пробника:', validators=[Optional()])
+    name = StringField('Название пробника:', validators=[Optional(), length(max=256)])
     description = TextAreaField('Описание:', validators=[Optional(), length(max=512)])
     is_public = BooleanField('Публичный доступ:')
     temperature = IntegerField('Температура:', validators=[DataRequired()])
@@ -78,12 +78,12 @@ class AddItemForm(FlaskForm):
 
 
 class AddGlazeForm(FlaskForm):
-    name = StringField('Название глазури:', validators=[DataRequired()])
+    name = StringField('Название глазури:', validators=[DataRequired(), length(max=64)])
     submit = SubmitField('Добавить')
 
 
 class AddClayForm(FlaskForm):
-    name = StringField('Название глины:', validators=[DataRequired()])
+    name = StringField('Название глины:', validators=[DataRequired(), length(max=64)])
     submit = SubmitField('Добавить')
 
 
