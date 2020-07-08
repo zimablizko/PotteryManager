@@ -3,9 +3,7 @@ from wtforms import SelectMultipleField, widgets
 
 
 # класс для поля с несколькими чекбоксами
-from app.models import User
-
-
 class MultiCheckboxField(SelectMultipleField):
     widget = widgets.ListWidget(prefix_label=False)
     option_widget = widgets.CheckboxInput()
+
