@@ -12,7 +12,7 @@ from app import db, login
 
 class Clay(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    name = db.Column(db.String(64), index=True, unique=True)
+    name = db.Column(db.String(64))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     create_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     delete_date = db.Column(db.DateTime, index=True)
@@ -23,7 +23,7 @@ class Clay(db.Model):
 
 class Glaze(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    name = db.Column(db.String(64), index=True, unique=True)
+    name = db.Column(db.String(64))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     create_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     delete_date = db.Column(db.DateTime, index=True)
@@ -49,7 +49,7 @@ class ItemGlaze(db.Model):
 
 class Item(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    name = db.Column(db.String(64))
+    name = db.Column(db.String(256))
     description = db.Column(db.Text(512))
     clay_id = db.Column(db.Integer, db.ForeignKey('clay.id'))
     surface_id = db.Column(db.Integer, db.ForeignKey('surface.id'))

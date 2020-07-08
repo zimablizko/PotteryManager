@@ -75,7 +75,7 @@ def add_item():
             file.save(os.path.join(app.config['IMAGE_FOLDER'], filename))
             item.image_name = filename
             image = Image.open(os.path.join(app.config['IMAGE_FOLDER'], item.image_name))
-            image.thumbnail((400, 400))
+            image.thumbnail((800, 800))
             image.save(os.path.join(app.config['THUMBNAIL_FOLDER'], item.image_name))
         if not form.name.data:
             item.name = db.session.query(Clay).filter_by(id=item.clay_id).first().name + ': ' \
@@ -151,7 +151,7 @@ def edit_item(item_id):
             file.save(os.path.join(app.config['IMAGE_FOLDER'], filename))
             item.image_name = filename
             image = Image.open(os.path.join(app.config['IMAGE_FOLDER'], item.image_name))
-            image.thumbnail((400, 400))
+            image.thumbnail((800, 800))
             image.save(os.path.join(app.config['THUMBNAIL_FOLDER'], item.image_name))
         print(form.name.data)
         print(item)
