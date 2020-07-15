@@ -5,3 +5,4 @@
 /app.db
 /app/thumbnails/*
 /migrations/versions/*
+/stuff/thumbnail_resizer.py
