@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask_login import current_user
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileRequired
@@ -111,3 +113,30 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
             raise ValidationError('Такой адрес уже используется.')
+
+
+class RecoveryForm(FlaskForm):
+    userdata = StringField('Имя пользователя или e-mail', validators=[DataRequired()])
+    submit = SubmitField('Подтвердить')
+
+    # Поиск пользователя по имени/e-mail
+    @staticmethod
+    def find_user_with_data(userdata):
+        user = User.query.filter_by(username=userdata).first()
+        if user is None:
+            user = User.query.filter_by(email=userdata).first()
+        return user
+
+# Форма для создания нового пароля
+class RecoveryPassForm(FlaskForm):
+    password = PasswordField('Пароль', validators=[DataRequired()])
+    password2 = PasswordField('Снова пароль', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Подтвердить')
+
+    # Поиск пользователя по recovery word
+    @staticmethod
+    def find_user_for_recovery(recovery_word):
+        user = User.query.filter_by(recovery_word=recovery_word).first()
+        if user is None or user.recovery_date < datetime.utcnow():
+            return None
+        return user
