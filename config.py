@@ -8,3 +8,5 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     IMAGE_FOLDER = os.path.dirname(__file__) + r'/app/images'
     THUMBNAIL_FOLDER = os.path.dirname(__file__) + r'/app/thumbnails'
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'myglazes.info@gmail.com'
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
