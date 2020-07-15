@@ -270,7 +270,7 @@ def recovery():
             return redirect(url_for('recovery'))
         recovery_word = user.set_recovery_word()
         db.session.commit()
-        print("232"+user.recovery_word+" "+str(user.recovery_date))
+        utils.send_recovery_email(user.email, recovery_word)
         flash('Ссылка на сброс пароля отправлена по e-mail')
         return redirect(url_for('login'))
     return render_template('recovery.html', title='Восстановление доступа', form=form)

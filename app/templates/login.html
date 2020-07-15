@@ -19,6 +19,6 @@
         {% endfor %}
     </div>
      <div class="form-group">{{ form.remember_me() }} {{ form.remember_me.label }}</div>
-     <div class="form-group">{{ form.submit(class="btn btn-primary mb-2") }} <!--<a href="{{ url_for('recovery') }}">Забыл пароль</a>--></div>
+     <div class="form-group">{{ form.submit(class="btn btn-primary mb-2") }} <a href="{{ url_for('recovery') }}">Забыл пароль</a></div>
 </form>
 {% endblock %}
