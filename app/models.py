@@ -1,4 +1,6 @@
-from datetime import datetime
+import random
+import string
+from datetime import datetime, timedelta
 
 from flask_login import UserMixin
 from sqlalchemy.ext.declarative import declarative_base
@@ -69,6 +71,8 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
+    recovery_word = db.Column(db.String(64))
+    recovery_date = db.Column(db.DateTime)
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -78,6 +82,13 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def set_recovery_word(self):
+        self.recovery_word = ''.join(random.choices(string.ascii_lowercase + string.digits, k=15))
+        print(self.username)
+        print(self.recovery_word)
+        self.recovery_date = datetime.utcnow() + timedelta(days=1)
+        return self.recovery_word
 
     def get_surfaces(self):
         return Surface.query.order_by('id')

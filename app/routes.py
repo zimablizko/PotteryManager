@@ -1,6 +1,7 @@
 import os
 import random
 import string
+
 from datetime import datetime
 
 from PIL import Image
@@ -13,8 +14,9 @@ from werkzeug.utils import secure_filename
 from wtforms import SelectField
 from wtforms.validators import Optional
 
-from app import app, db
-from app.forms import LoginForm, AddItemForm, ListForm, AddGlazeForm, AddClayForm, TableForm, RegistrationForm, ItemForm
+from app import app, db, utils
+from app.forms import LoginForm, AddItemForm, ListForm, AddGlazeForm, AddClayForm, TableForm, RegistrationForm, \
+    ItemForm, RecoveryForm, RecoveryPassForm
 from app.models import Clay, Item, Surface, Glaze, ItemGlaze, User
 
 
@@ -39,6 +41,7 @@ def index():
 
 
 @app.route('/table', methods=['GET', 'POST'])
+@login_required
 def table():
     form = TableForm()
     if form.validate_on_submit():
@@ -65,6 +68,7 @@ def item(item_id):
     return render_template('item.html', form=form, item=item)
 
 @app.route('/add_item', methods=['GET', 'POST'])
+@login_required
 def add_item():
     form = AddItemForm(None)
     if form.validate_on_submit():
@@ -72,7 +76,7 @@ def add_item():
                     surface_id=form.surface_id.data, user_id=current_user.id,
                     temperature=form.temperature.data, is_public=form.is_public.data)
         if form.image.data:
-            save_image(request.files['image'], item)
+            utils.save_image(request.files['image'], item)
         if not form.name.data:
             item.name = db.session.query(Clay).filter_by(id=item.clay_id).first().name + ': ' \
                         + db.session.query(Glaze).filter_by(id=form.glaze_id_1.data).first().name
@@ -97,6 +101,7 @@ def add_item():
 
 
 @app.route('/edit_item/<item_id>', methods=['GET', 'POST'])
+@login_required
 def edit_item(item_id):
     form = AddItemForm(item_id)
     if form.validate_on_submit():
@@ -142,7 +147,7 @@ def edit_item(item_id):
         item.surface_id = form.surface_id.data
         item.is_public = form.is_public.data
         if form.image.data:
-            save_image(request.files['image'], item)
+            utils.save_image(request.files['image'], item)
         print(form.name.data)
         print(item)
         db.session.commit()
@@ -172,6 +177,7 @@ def edit_item(item_id):
 
 
 @app.route('/delete_item/<item_id>', methods=['GET', 'POST'])
+@login_required
 def delete_item(item_id):
     item = db.session.query(Item).filter(Item.id == item_id).one()
     if item:
@@ -186,6 +192,7 @@ def delete_item(item_id):
 
 
 @app.route('/add_glaze', methods=['GET', 'POST'])
+@login_required
 def add_glaze():
     form = AddGlazeForm()
     if form.validate_on_submit():
@@ -197,6 +204,7 @@ def add_glaze():
 
 
 @app.route('/add_clay', methods=['GET', 'POST'])
+@login_required
 def add_clay():
     form = AddClayForm()
     if form.validate_on_submit():
@@ -246,22 +254,60 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html', title='Регистрация', form=form)
 
+
+@app.route('/recovery', methods=['GET', 'POST'])
+def recovery():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = RecoveryForm()
+    form.recovery_flag = False
+    print("ttttt")
+    if form.validate_on_submit():
+        print("232")
+        user = form.find_user_with_data(form.userdata.data)
+        if user is None:
+            flash('Такое имя пользователя или e-mail в системе не найдены')
+            return redirect(url_for('recovery'))
+        recovery_word = user.set_recovery_word()
+        db.session.commit()
+        print("232"+user.recovery_word+" "+str(user.recovery_date))
+        flash('Ссылка на сброс пароля отправлена по e-mail')
+        return redirect(url_for('login'))
+    return render_template('recovery.html', title='Восстановление доступа', form=form)
+
+
+@app.route('/recovery/<recovery_word>', methods=['GET', 'POST'])
+def recovery_pass(recovery_word):
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = RecoveryPassForm()
+    user = form.find_user_for_recovery(recovery_word)
+    if user is None:
+        flash('Ссылка на восстановление недействительна')
+        return redirect(url_for('login'))
+    form.recovery_flag = True
+    if form.validate_on_submit():
+        user.set_password(form.password.data)
+        user.recovery_date = datetime.utcnow()
+        db.session.commit()
+        flash('Пароль изменен')
+        return redirect(url_for('login'))
+    return render_template('recovery.html', title='Восстановление доступа', form=form)
+
+
 # ----------- OTHER STUFF ----------- #
 @app.route('/images/<image>')
 def images(image):
-    return send_from_directory(app.config['IMAGE_FOLDER'], image)\
+    return send_from_directory(app.config['IMAGE_FOLDER'], image)
+
 
 @app.route('/thumbnails/<image>')
 def thumbnails(image):
     return send_from_directory(app.config['THUMBNAIL_FOLDER'], image)
 
+@app.route('/about', methods=['GET', 'POST'])
+@login_required
+def about():
+    return render_template('about.html', title='О проекте')
 
-def save_image(file, item):
-    filename = ''.join(random.choices(string.ascii_lowercase + string.digits, k=15)) + '.' + (
-        file.filename.split('.').pop())
-    print(filename)
-    file.save(os.path.join(app.config['IMAGE_FOLDER'], filename))
-    item.image_name = filename
-    image = Image.open(os.path.join(app.config['IMAGE_FOLDER'], item.image_name))
-    image.thumbnail((800, 800))
-    image.save(os.path.join(app.config['THUMBNAIL_FOLDER'], item.image_name))
+
