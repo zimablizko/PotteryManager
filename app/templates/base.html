@@ -27,7 +27,7 @@
             </li>
             {% else %}
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('index') }}">Все пробники</a>
+                <a class="nav-link" href="{{ url_for('list') }}">Мои пробники</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('table') }}">Таблица смешивания</a>
@@ -47,15 +47,19 @@
             </li>
 
         </ul>
-        <span class="navbar-text">
-      {{ current_user.username }}
-    </span>
+
         <div class="form-inline">
 
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('logout') }}">Выйти</a>
-                </li>
+                <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
+                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {{ current_user.username }}
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    <a class="dropdown-item" href="{{ url_for('logout') }}">Выйти</a>
+                </div>
+            </li>
                 <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('about') }}">О проекте</a>
                 </li>

@@ -8,8 +8,6 @@ from flask_migrate import Migrate
 
 app = Flask(__name__)
 app.config.from_object(Config)
-print(app.config.get('MAIL_USERNAME'))
-print(app.config.get('MAIL_PASSWORD'))
 
 # DB stuff
 db = SQLAlchemy(app)

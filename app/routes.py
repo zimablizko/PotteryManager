@@ -16,15 +16,13 @@ from wtforms.validators import Optional
 
 from app import app, db, utils
 from app.forms import LoginForm, AddItemForm, ListForm, AddGlazeForm, AddClayForm, TableForm, RegistrationForm, \
-    ItemForm, RecoveryForm, RecoveryPassForm
+    ItemForm, RecoveryForm, RecoveryPassForm, ItemsForm
 from app.models import Clay, Item, Surface, Glaze, ItemGlaze, User
 
 
-@app.route('/', methods=['GET', 'POST'])
-@app.route('/index', methods=['GET', 'POST'])
 @app.route('/list', methods=['GET', 'POST'])
 @login_required
-def index():
+def list():
     form = ListForm()
     if form.validate_on_submit():
         items = current_user.get_items()
@@ -37,7 +35,16 @@ def index():
         items = items.all()
     else:
         items = current_user.get_items().all()
-    return render_template('list.html', form=form, title='Все пробники', items=items)
+    return render_template('list.html', form=form, title='Мои пробники', items=items)
+
+
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/index', methods=['GET', 'POST'])
+@app.route('/glazes', methods=['GET', 'POST'])
+def index():
+    form = ItemsForm()
+    items = form.get_public_items()
+    return render_template('items.html', form=form, title='Публичные пробники', items=items)
 
 
 @app.route('/table', methods=['GET', 'POST'])
@@ -56,7 +63,7 @@ def table():
     for item in items:
         item.glazes = [g.glaze_id for g in
                        db.session.query(ItemGlaze).filter_by(item_id=item.id).order_by('order').all()]
-    return render_template('index.html', form=form, title='Таблица смешивания', items=items)
+    return render_template('table.html', form=form, title='Таблица смешивания', items=items)
 
 
 @app.route('/item/<item_id>', methods=['GET', 'POST'])

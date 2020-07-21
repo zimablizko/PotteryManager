@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Публичные пробники</h1>
+<p>Список пробников, которыми хотят поделиться керамисты.</p>
+<hr>
+<div class="row row-cols-1 row-cols-md-3">
+    {% for item in items %}
+    <div class="col mb-4">
+        {% include '_list_item.html' %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

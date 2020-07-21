@@ -11,6 +11,10 @@ from wtforms.validators import DataRequired, ValidationError, Optional, length, 
 from app.models import Item, Clay, Surface, Glaze, ItemGlaze, User
 
 
+class ItemsForm(FlaskForm):
+    def get_public_items(self):
+        return Item.query.filter(Item.delete_date == None).filter(Item.is_public == True).order_by('id')
+
 class ListForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(ListForm, self).__init__(*args, **kwargs)

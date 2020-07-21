@@ -65,6 +65,9 @@ class Item(db.Model):
     def __repr__(self):
         return 'Item {}, {}'.format(self.name, self.image_name)
 
+    def get_author(self):
+        return User.query.filter_by(id=self.user_id).first()
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
