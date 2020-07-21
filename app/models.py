@@ -3,6 +3,7 @@ import string
 from datetime import datetime, timedelta
 
 from flask_login import UserMixin
+from sqlalchemy import desc
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -88,8 +89,6 @@ class User(UserMixin, db.Model):
 
     def set_recovery_word(self):
         self.recovery_word = ''.join(random.choices(string.ascii_lowercase + string.digits, k=15))
-        print(self.username)
-        print(self.recovery_word)
         self.recovery_date = datetime.utcnow() + timedelta(days=1)
         return self.recovery_word
 
@@ -97,7 +96,7 @@ class User(UserMixin, db.Model):
         return Surface.query.order_by('id')
 
     def get_items(self):
-        return Item.query.filter_by(user_id=self.id).filter(Item.delete_date == None).order_by('id')
+        return Item.query.filter_by(user_id=self.id).filter(Item.delete_date == None).order_by(desc('id'))
 
     def get_materials(self, table):
         return table.query.filter_by(user_id=self.id).order_by('id')

@@ -21,8 +21,9 @@ from app.models import Clay, Item, Surface, Glaze, ItemGlaze, User
 
 
 @app.route('/list', methods=['GET', 'POST'])
+@app.route('/list/<int:page>', methods=['GET', 'POST'])
 @login_required
-def list():
+def list(page=1):
     form = ListForm()
     if form.validate_on_submit():
         items = current_user.get_items()
@@ -32,19 +33,21 @@ def list():
             items = items.filter(Item.surface_id.__eq__(form.surface_filter.data))
         if form.glaze_filter.data > 0:
             items = items.join(ItemGlaze).filter(ItemGlaze.glaze_id.__eq__(form.glaze_filter.data))
-        items = items.all()
+        items = items.paginate(page, app.config['ITEMS_PER_PAGE'], False)
     else:
-        items = current_user.get_items().all()
+        items = current_user.get_items().paginate(page, app.config['ITEMS_PER_PAGE'], False)
     return render_template('list.html', form=form, title='Мои пробники', items=items)
 
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
-@app.route('/glazes', methods=['GET', 'POST'])
-def index():
+@app.route('/index/<int:page>', methods=['GET', 'POST'])
+@app.route('/items', methods=['GET', 'POST'])
+@app.route('/items/<int:page>', methods=['GET', 'POST'])
+def index(page=1):
     form = ItemsForm()
-    items = form.get_public_items()
-    return render_template('items.html', form=form, title='Публичные пробники', items=items)
+    public_items = form.get_public_items().paginate(page, app.config['ITEMS_PER_PAGE'], False)
+    return render_template('items.html', form=form, title='Публичные пробники', items=public_items)
 
 
 @app.route('/table', methods=['GET', 'POST'])
@@ -73,6 +76,7 @@ def item(item_id):
     if not item.is_public and (current_user.is_anonymous or current_user.id != item.user_id):
         return render_template('error.html', error="Ошибка доступа")
     return render_template('item.html', form=form, item=item)
+
 
 @app.route('/add_item', methods=['GET', 'POST'])
 @login_required
@@ -136,7 +140,7 @@ def edit_item(item_id):
             if item_glaze_2:
                 db.session.delete(item_glaze_2)
         item_glaze_3 = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).filter(
-                    ItemGlaze.order == 2).one_or_none()
+            ItemGlaze.order == 2).one_or_none()
         if form.glaze_id_3.data > 0:
             if item_glaze_3:
                 item_glaze_3.glaze_id = form.glaze_id_3.data
@@ -312,9 +316,8 @@ def images(image):
 def thumbnails(image):
     return send_from_directory(app.config['THUMBNAIL_FOLDER'], image)
 
+
 @app.route('/about', methods=['GET', 'POST'])
 @login_required
 def about():
     return render_template('about.html', title='О проекте')
-
-
