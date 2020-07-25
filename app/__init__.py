@@ -6,9 +6,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 app.config.from_object(Config)
-app.static_folder = 'static'
+
 
 # DB stuff
 db = SQLAlchemy(app)
