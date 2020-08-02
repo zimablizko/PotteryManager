@@ -11,3 +11,4 @@ class Config(object):
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'myglazes.info@gmail.com'
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ITEMS_PER_PAGE = 12
+    GLAZE_MAX_COUNT = 3
