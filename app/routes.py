@@ -182,7 +182,7 @@ def edit_item(item_id):
             form.glaze_id_3.data = glaze_3.glaze_id
         form.clay_id.data = item.clay_id
         form.surface_id.data = item.surface_id
-        form.image.data = item.image_name
+        form.image_name = item.image_name
         form.submit.label.text = 'Изменить'
     return render_template('add_item.html', title='Изменение пробника', form=form)
 
