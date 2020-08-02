@@ -3,13 +3,17 @@ from datetime import datetime
 from flask_login import current_user
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileRequired
-from sqlalchemy import select
+from sqlalchemy import select, desc
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, FileField, RadioField, \
     IntegerField, TextAreaField, SelectMultipleField
 from wtforms.validators import DataRequired, ValidationError, Optional, length, EqualTo, Email
 
 from app.models import Item, Clay, Surface, Glaze, ItemGlaze, User
 
+
+class ItemsForm(FlaskForm):
+    def get_public_items(self):
+        return Item.query.filter(Item.delete_date == None).filter(Item.is_public == True).order_by(desc('id'))
 
 class ListForm(FlaskForm):
     def __init__(self, *args, **kwargs):

@@ -36,7 +36,7 @@ def send_email(subject, to_addr, from_addr, body_text):
     server = smtplib.SMTP('smtp.gmail.com', 587, timeout=120)
     server.ehlo()
     server.starttls()
-    server.login(app.config.get('MAIL_USER'), app.config.get('MAIL_PASSWORD'))
+    server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
     server.sendmail(msg['From'], msg['To'], msg.as_string())
     server.quit()
 

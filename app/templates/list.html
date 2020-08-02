@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Все пробники</h1>
+<h1>Мои пробники</h1>
 <form action="" method="post">
     {{ form.hidden_tag() }}
     <div class="form-row">
@@ -20,27 +20,11 @@
     {{ form.submit(class="btn btn-primary mb-2") }}
 
 </form>
+<hr>
 <div class="row row-cols-1 row-cols-md-3">
-    {% for item in items %}
+    {% for item in items.items %}
     <div class="col mb-4">
-    <!-- <div style="border: 1px black solid; padding: 5px; margin: 5px; width:180px; display: inline-block;">-->
-    <div class="card">
-        {% if item.image_name%}
-        <a data-lightbox="{{ item.image_name }}" href="{{ url_for('images', image=item.image_name)}}">
-            <img class="card-img-top" src="{{ url_for('thumbnails', image=item.image_name)}}">
-        </a>
-        {% else %}
-        <p><b>Нет изображения</b></p>
-        {% endif %}
-        <div class="card-body">
-            <h5 class="card-title">{{ item.name }}</h5>
-            <p class="card-text">{{ item.description }}</p>
-            <p class="card-text">Температура: {{ item.temperature }}</p>
-             <a href="{{ url_for('item', item_id=item.id)}}" class="btn btn-sm btn-primary">Подробнее</a>
-            <a href="{{ url_for('edit_item', item_id=item.id)}}" class="btn btn-sm btn-success">Изменить</a>
-        </div>
-
-    </div>
+        {% include '_list_item.html' %}
     </div>
     {% endfor %}
 </div>
