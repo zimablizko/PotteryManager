@@ -13,7 +13,7 @@ from app.models import Item, Clay, Surface, Glaze, ItemGlaze, User
 
 class ItemsForm(FlaskForm):
     def get_public_items(self):
-        return Item.query.filter(Item.delete_date == None).filter(Item.is_public == True).order_by(desc('id'))
+        return Item.query.filter(Item.delete_date == None).filter(Item.is_public == True).order_by(desc(Item.edit_date))
 
 class ListForm(FlaskForm):
     def __init__(self, *args, **kwargs):

@@ -131,6 +131,7 @@ def edit_item(item_id):
         item.clay_id = form.clay_id.data
         item.surface_id = form.surface_id.data
         item.is_public = form.is_public.data
+        item.edit_date = datetime.utcnow()
         if form.image.data:
             utils.save_image(request.files['image'], item)
         # Обработка глазурей
