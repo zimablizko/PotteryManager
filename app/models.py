@@ -3,9 +3,9 @@ import string
 from datetime import datetime, timedelta
 
 from flask_login import UserMixin
-from sqlalchemy import desc
+from sqlalchemy import desc, cast, Date, func
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, session
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import db, login
@@ -68,6 +68,9 @@ class Item(db.Model):
 
     def get_author(self):
         return User.query.filter_by(id=self.user_id).first()
+
+    def get_edit_date(self):
+        return self.create_date.date()
 
 
 class User(UserMixin, db.Model):
