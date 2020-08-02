@@ -110,7 +110,7 @@ def add_item():
                     db.session.delete(item_glaze)
         flash('Пробник {} добавлен!'.format(item.name))
         db.session.commit()
-        return redirect(url_for('index'))
+        return redirect(url_for('list'))
     return render_template('add_item.html', title='Добавление пробника', form=form)
 
 
@@ -149,7 +149,7 @@ def edit_item(item_id):
                 if item_glaze:
                     db.session.delete(item_glaze)
         db.session.commit()
-        return redirect(url_for('index'))
+        return redirect(url_for('list'))
     elif request.method == 'GET':
         print("INIT  " + str(item_id))
         item = Item.query.filter_by(id=item_id).one()
@@ -182,7 +182,7 @@ def delete_item(item_id):
         # db.session.delete(item)
         item.delete_date = datetime.utcnow()
         db.session.commit()
-    return redirect(url_for('index'))
+    return redirect(url_for('list'))
 
 
 @app.route('/add_glaze', methods=['GET', 'POST'])
@@ -193,7 +193,7 @@ def add_glaze():
         glaze = Glaze(name=form.name.data, user_id=current_user.id)
         db.session.add(glaze)
         db.session.commit()
-        return redirect(url_for('index'))
+        return redirect(url_for('list'))
     return render_template('add_glaze.html', title='Добавление глазури', form=form)
 
 
@@ -205,7 +205,7 @@ def add_clay():
         clay = Clay(name=form.name.data, user_id=current_user.id)
         db.session.add(clay)
         db.session.commit()
-        return redirect(url_for('index'))
+        return redirect(url_for('list'))
     return render_template('add_clay.html', title='Добавление глины', form=form)
 
 
