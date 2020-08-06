@@ -152,7 +152,6 @@ def edit_item(item_id):
         db.session.commit()
         return redirect(url_for('list'))
     elif request.method == 'GET':
-        print("INIT  " + str(item_id))
         item = Item.query.filter_by(id=item_id).one()
         form.id = item.id
         glaze_list = [None] * 3
