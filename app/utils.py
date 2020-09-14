@@ -17,14 +17,14 @@ class MultiCheckboxField(SelectMultipleField):
     option_widget = widgets.CheckboxInput()
 
 
-def save_image(file, item):
+def save_image(file, image):
     filename = ''.join(random.choices(string.ascii_lowercase + string.digits, k=15)) + '.' + (
         file.filename.split('.').pop())
     file.save(os.path.join(app.config['IMAGE_FOLDER'], filename))
-    item.image_name = filename
-    image = Image.open(os.path.join(app.config['IMAGE_FOLDER'], item.image_name))
-    image.thumbnail((800, 800))
-    image.save(os.path.join(app.config['THUMBNAIL_FOLDER'], item.image_name))
+    image.name = filename
+    image_file = Image.open(os.path.join(app.config['IMAGE_FOLDER'], image.name))
+    image_file.thumbnail((800, 800))
+    image_file.save(os.path.join(app.config['THUMBNAIL_FOLDER'], image.name))
 
 
 def send_email(subject, to_addr, from_addr, body_text):

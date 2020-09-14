@@ -72,11 +72,37 @@ class Item(db.Model):
     def get_author(self):
         return User.query.filter_by(id=self.user_id).first()
 
+    def get_main_image(self):
+        item_image = ItemImage.query.filter_by(item_id=self.id).order_by(ItemImage.order).first()
+        print(item_image)
+        if item_image:
+            return Image.query.filter_by(id=item_image.image_id).first()
+        else:
+            return None
+
     def get_edit_date(self):
         if self.edit_date > self.create_date:
             return self.edit_date.date()
         else:
             return self.create_date.date()
+
+
+class Image(db.Model):
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    name = db.Column(db.String(256))
+    create_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    edit_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    delete_date = db.Column(db.DateTime, index=True)
+
+    def __repr__(self):
+        return 'Image {}'.format(self.name)
+
+
+class ItemImage(db.Model):
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    image_id = db.Column(db.Integer, db.ForeignKey('image.id'))
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
+    order = db.Column(db.Integer)
 
 
 class User(UserMixin, db.Model):

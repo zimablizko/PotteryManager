@@ -76,6 +76,7 @@ class AddItemForm(FlaskForm):
     surface_id = SelectField('Поверхность:', choices=None, validate_choice=False,
                              coerce=int)
     image = FileField(u'Фото:', validators=[FileAllowed(['jpeg', 'jpg', 'png'], 'Images only!')])
+    image_list = FieldList(FileField(u'Фото:', validators=[FileAllowed(['jpeg', 'jpg', 'png'], 'Images only!')]), min_entries=3)
     submit = SubmitField('Добавить')
 
 

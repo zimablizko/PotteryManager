@@ -12,3 +12,4 @@ class Config(object):
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ITEMS_PER_PAGE = 12
     GLAZE_MAX_COUNT = 3
+    IMAGE_MAX_COUNT = 3

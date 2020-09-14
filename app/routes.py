@@ -4,7 +4,6 @@ import string
 
 from datetime import datetime
 
-from PIL import Image
 from flask import render_template, flash, redirect, url_for, request, send_from_directory
 from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy import func
@@ -17,7 +16,7 @@ from wtforms.validators import Optional
 from app import app, db, utils
 from app.forms import LoginForm, AddItemForm, ListForm, AddGlazeForm, AddClayForm, TableForm, RegistrationForm, \
     ItemForm, RecoveryForm, RecoveryPassForm, ItemsForm
-from app.models import Clay, Item, Surface, Glaze, ItemGlaze, User
+from app.models import Clay, Item, Surface, Glaze, ItemGlaze, User, ItemImage, Image
 
 
 @app.route('/list', methods=['GET', 'POST'])
@@ -82,12 +81,13 @@ def item(item_id):
 @login_required
 def add_item():
     form = AddItemForm(None)
+    form.image_names = [None] * 3
     if form.validate_on_submit():
         item = Item(name=form.name.data, description=form.description.data, clay_id=form.clay_id.data,
                     surface_id=form.surface_id.data, user_id=current_user.id,
                     temperature=form.temperature.data, is_public=form.is_public.data)
-        if form.image.data:
-            utils.save_image(request.files['image'], item)
+        #if form.image.data:
+        #    utils.save_image(request.files['image'], item)
         if not form.name.data:
             item.name = db.session.query(Clay).filter_by(id=item.clay_id).first().name + ': ' \
                         + db.session.query(Glaze).filter_by(id=form.glaze_list[0].data).first().name
@@ -108,6 +108,20 @@ def add_item():
             else:
                 if item_glaze:
                     db.session.delete(item_glaze)
+        # Обработка изображений
+        for i, item_image in enumerate([None] * app.config['IMAGE_MAX_COUNT']):
+            item_image = db.session.query(ItemImage).filter(ItemImage.item_id == item_id).filter(
+                ItemImage.order == i).one_or_none()
+            if form.image_list[i].data:
+                image = Image()
+                utils.save_image(request.files['image_list-'+str(i)], image)
+                db.session.add(image)
+                image_id = db.session.query(func.max(Image.id)).scalar()
+                if item_image:
+                    item_image.image_id = image_id
+                else:
+                    item_image = ItemImage(image_id=image_id, item_id=item_id, order=i)
+                    db.session.add(item_image)
         flash('Пробник {} добавлен!'.format(item.name))
         db.session.commit()
         return redirect(url_for('list'))
@@ -132,8 +146,8 @@ def edit_item(item_id):
         item.surface_id = form.surface_id.data
         item.is_public = form.is_public.data
         item.edit_date = datetime.utcnow()
-        if form.image.data:
-            utils.save_image(request.files['image'], item)
+       # if form.image.data:
+        #    utils.save_image(request.files['image'], item)
         # Обработка глазурей
         for i, item_glaze in enumerate([None] * app.config['GLAZE_MAX_COUNT']):
             item_glaze = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).filter(
@@ -149,6 +163,23 @@ def edit_item(item_id):
             else:
                 if item_glaze:
                     db.session.delete(item_glaze)
+        # Обработка изображений
+        print("tetetet")
+        print(form.image_list)
+        for i, item_image in enumerate([None] * app.config['IMAGE_MAX_COUNT']):
+            item_image = db.session.query(ItemImage).filter(ItemImage.item_id == item_id).filter(
+                ItemImage.order == i).one_or_none()
+            if form.image_list[i].data:
+                print(form.image_list[i].data)
+                image = Image()
+                utils.save_image(request.files['image_list-' + str(i)], image)
+                db.session.add(image)
+                image_id = db.session.query(func.max(Image.id)).scalar()
+                if item_image:
+                    item_image.image_id = image_id
+                else:
+                    item_image = ItemImage(image_id=image_id, item_id=item_id, order=i)
+                    db.session.add(item_image)
         db.session.commit()
         return redirect(url_for('list'))
     elif request.method == 'GET':
@@ -156,16 +187,23 @@ def edit_item(item_id):
         form.id = item.id
         glaze_list = [None] * 3
         for i, glaze in enumerate(glaze_list):
-            glaze = ItemGlaze.query.filter_by(item_id=item.id).filter_by(order=i).order_by('order').one_or_none()
+            glaze = ItemGlaze.query.filter_by(item_id=item.id).filter_by(order=i).one_or_none()
             if glaze:
                 form.glaze_list[i].data = glaze.glaze_id
+        form.image_names = [None] * 3
+        for i, image in enumerate(form.image_names):
+            item_image = ItemImage.query.filter_by(item_id=item.id).filter_by(order=i).one_or_none()
+            if item_image:
+                image = Image.query.filter_by(id=item_image.image_id).one_or_none()
+                if image:
+                    form.image_names[i] = image.name
         form.name.data = item.name
         form.description.data = item.description
         form.temperature.data = item.temperature
         form.is_public.data = item.is_public
         form.clay_id.data = item.clay_id
         form.surface_id.data = item.surface_id
-        form.image_name = item.image_name
+        #form.image_name = item.image_name
         form.submit.label.text = 'Изменить'
     return render_template('add_item.html', title='Изменение пробника', form=form)
 
