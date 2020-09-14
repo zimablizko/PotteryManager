@@ -5,7 +5,7 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileRequired
 from sqlalchemy import select, desc
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, FileField, RadioField, \
-    IntegerField, TextAreaField, SelectMultipleField
+    IntegerField, TextAreaField, SelectMultipleField, FieldList
 from wtforms.validators import DataRequired, ValidationError, Optional, length, EqualTo, Email
 
 from app.models import Item, Clay, Surface, Glaze, ItemGlaze, User
@@ -13,7 +13,7 @@ from app.models import Item, Clay, Surface, Glaze, ItemGlaze, User
 
 class ItemsForm(FlaskForm):
     def get_public_items(self):
-        return Item.query.filter(Item.delete_date == None).filter(Item.is_public == True).order_by(desc('id'))
+        return Item.query.filter(Item.delete_date == None).filter(Item.is_public == True).order_by(desc(Item.edit_date))
 
 class ListForm(FlaskForm):
     def __init__(self, *args, **kwargs):
@@ -60,9 +60,9 @@ class AddItemForm(FlaskForm):
         glazes_additional_choices = ([(0, '_нет_')]).__add__(glazes_choices)
         clays_choices = [(c.id, c.name) for c in current_user.get_materials(Clay)]
         surfaces_choices = [(c.id, c.name) for c in current_user.get_surfaces()]
-        self.glaze_id_1.choices = glazes_choices
-        self.glaze_id_2.choices = glazes_additional_choices
-        self.glaze_id_3.choices = glazes_additional_choices
+        self.glaze_list[0].choices = glazes_choices
+        self.glaze_list[1].choices = glazes_additional_choices
+        self.glaze_list[2].choices = glazes_additional_choices
         self.clay_id.choices = clays_choices
         self.surface_id.choices = surfaces_choices
 
@@ -70,12 +70,8 @@ class AddItemForm(FlaskForm):
     description = TextAreaField('Описание:', validators=[Optional(), length(max=512)])
     is_public = BooleanField('Публичный доступ:')
     temperature = IntegerField('Температура:', validators=[DataRequired()])
-    glaze_id_1 = SelectField('Глазурь 1:', choices=None, validate_choice=False,
-                             coerce=int)
-    glaze_id_2 = SelectField('Глазурь 2:', choices=None, validate_choice=False,
-                             coerce=int)
-    glaze_id_3 = SelectField('Глазурь 3:', choices=None, validate_choice=False,
-                             coerce=int)
+    glaze_list = FieldList(SelectField('Глазурь:', choices=None, validate_choice=False,
+                             coerce=int), min_entries=3)
     clay_id = SelectField('Глина:', choices=None, validate_choice=False, coerce=int)
     surface_id = SelectField('Поверхность:', choices=None, validate_choice=False,
                              coerce=int)

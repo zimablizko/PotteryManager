@@ -1,7 +1,7 @@
             {% for item in items %}
                 {% if item.glazes.__len__()==1 and item.glazes[0]==g1.id and item.glazes[0]==g2.id %}
                         {% if item.image_name%}
-                             <a data-lightbox="{{ item.image_name }}" href="{{ url_for('images', image=item.image_name)}}">
+                             <a href="{{ url_for('item', item_id=item.id)}}">
                                 <img style="width:180px" data-lightbox="{{item.image_name}}"  src="{{ url_for('thumbnails', image=item.image_name)}}">
                              </a>
                         {% else %}
@@ -11,7 +11,7 @@
                     {% if item.glazes[0]==g1.id%}
                         {% if item.glazes[1]==g2.id%}
                             {% if item.image_name%}
-                                <a data-lightbox="{{ item.image_name }}" href="{{ url_for('images', image=item.image_name)}}">
+                                <a href="{{ url_for('item', item_id=item.id)}}">
                                     <img style="width:180px"  src="{{ url_for('thumbnails', image=item.image_name)}}">
                                 </a>
                             {% else %}
@@ -22,7 +22,7 @@
                 {% elif item.glazes[0]==g1.id%}
                     {% if item.glazes[1]==g2.id%}
                         {% if item.image_name%}
-                             <a data-lightbox="{{ item.image_name }}" href="{{ url_for('images', image=item.image_name)}}">
+                             <a href="{{ url_for('item', item_id=item.id)}}">
                                 <img style="width:180px" data-lightbox="{{item.image_name}}"  src="{{ url_for('thumbnails', image=item.image_name)}}">
                              </a>
                         {% else %}

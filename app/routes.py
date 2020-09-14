@@ -90,24 +90,27 @@ def add_item():
             utils.save_image(request.files['image'], item)
         if not form.name.data:
             item.name = db.session.query(Clay).filter_by(id=item.clay_id).first().name + ': ' \
-                        + db.session.query(Glaze).filter_by(id=form.glaze_id_1.data).first().name
+                        + db.session.query(Glaze).filter_by(id=form.glaze_list[0].data).first().name
         db.session.add(item)
-        max_id = db.session.query(func.max(Item.id)).scalar()
-        item_glaze = ItemGlaze(glaze_id=form.glaze_id_1.data, item_id=max_id, order=0)
-        db.session.add(item_glaze)
-        if form.glaze_id_2.data > 0:
-            item_glaze_2 = ItemGlaze(glaze_id=form.glaze_id_2.data, item_id=max_id, order=1)
-            db.session.add(item_glaze_2)
-            if not form.name.data:
-                item.name += ' + ' + db.session.query(Glaze).filter_by(id=form.glaze_id_2.data).first().name
-        if form.glaze_id_3.data > 0:
-            item_glaze_3 = ItemGlaze(glaze_id=form.glaze_id_3.data, item_id=max_id, order=2)
-            db.session.add(item_glaze_3)
-            if not form.name.data:
-                item.name += ' + ' + db.session.query(Glaze).filter_by(id=form.glaze_id_3.data).first().name
-        db.session.commit()
+        item_id = db.session.query(func.max(Item.id)).scalar()
+        # Обработка глазурей
+        for i, item_glaze in enumerate([None] * app.config['GLAZE_MAX_COUNT']):
+            item_glaze = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).filter(
+                ItemGlaze.order == i).one_or_none()
+            if form.glaze_list[i].data > 0:
+                if item_glaze:
+                    item_glaze.glaze_id = form.glaze_list[i].data
+                else:
+                    item_glaze = ItemGlaze(glaze_id=form.glaze_list[i].data, item_id=item_id, order=i)
+                    db.session.add(item_glaze)
+                if not form.name.data:
+                    item.name += ' + ' + db.session.query(Glaze).filter_by(id=form.glaze_list[i].data).first().name
+            else:
+                if item_glaze:
+                    db.session.delete(item_glaze)
         flash('Пробник {} добавлен!'.format(item.name))
-        return redirect(url_for('index'))
+        db.session.commit()
+        return redirect(url_for('list'))
     return render_template('add_item.html', title='Добавление пробника', form=form)
 
 
@@ -116,73 +119,53 @@ def add_item():
 def edit_item(item_id):
     form = AddItemForm(item_id)
     if form.validate_on_submit():
-        print("EDIT")
+        # Сохранение полей пробника
         item = db.session.query(Item).filter(Item.id == item_id).one()
         if not form.name.data:
             item.name = db.session.query(Clay).filter_by(id=item.clay_id).first().name + ': ' \
-                        + db.session.query(Glaze).filter_by(id=form.glaze_id_1.data).first().name
+                        + db.session.query(Glaze).filter_by(id=form.glaze_list[0].data).first().name
         else:
             item.name = form.name.data
-        item_glaze_1 = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).filter(
-            ItemGlaze.order == 0).one_or_none()
-        item_glaze_1.glaze_id = form.glaze_id_1.data
-        item_glaze_2 = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).filter(
-            ItemGlaze.order == 1).one_or_none()
-        if form.glaze_id_2.data > 0:
-            if item_glaze_2:
-                item_glaze_2.glaze_id = form.glaze_id_2.data
-            else:
-                item_glaze_2 = ItemGlaze(glaze_id=form.glaze_id_2.data, item_id=item_id, order=1)
-                db.session.add(item_glaze_2)
-            if not form.name.data:
-                item.name += ' + ' + db.session.query(Glaze).filter_by(id=form.glaze_id_2.data).first().name
-        else:
-            if item_glaze_2:
-                db.session.delete(item_glaze_2)
-        item_glaze_3 = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).filter(
-            ItemGlaze.order == 2).one_or_none()
-        if form.glaze_id_3.data > 0:
-            if item_glaze_3:
-                item_glaze_3.glaze_id = form.glaze_id_3.data
-            else:
-                item_glaze_3 = ItemGlaze(glaze_id=form.glaze_id_3.data, item_id=item_id, order=2)
-                db.session.add(item_glaze_3)
-            if not form.name.data:
-                item.name += ' + ' + db.session.query(Glaze).filter_by(id=form.glaze_id_3.data).first().name
-        else:
-            if item_glaze_3:
-                db.session.delete(item_glaze_3)
         item.description = form.description.data
         item.temperature = form.temperature.data
         item.clay_id = form.clay_id.data
         item.surface_id = form.surface_id.data
         item.is_public = form.is_public.data
+        item.edit_date = datetime.utcnow()
         if form.image.data:
             utils.save_image(request.files['image'], item)
-        print(form.name.data)
-        print(item)
+        # Обработка глазурей
+        for i, item_glaze in enumerate([None] * app.config['GLAZE_MAX_COUNT']):
+            item_glaze = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).filter(
+                ItemGlaze.order == i).one_or_none()
+            if form.glaze_list[i].data > 0:
+                if item_glaze:
+                    item_glaze.glaze_id = form.glaze_list[i].data
+                else:
+                    item_glaze = ItemGlaze(glaze_id=form.glaze_list[i].data, item_id=item_id, order=i)
+                    db.session.add(item_glaze)
+                if not form.name.data:
+                    item.name += ' + ' + db.session.query(Glaze).filter_by(id=form.glaze_list[i].data).first().name
+            else:
+                if item_glaze:
+                    db.session.delete(item_glaze)
         db.session.commit()
-        return redirect(url_for('index'))
+        return redirect(url_for('list'))
     elif request.method == 'GET':
-        print("INIT  " + str(item_id))
         item = Item.query.filter_by(id=item_id).one()
         form.id = item.id
-        glaze_1 = ItemGlaze.query.filter_by(item_id=item.id).filter_by(order=0).order_by('order').one_or_none()
-        glaze_2 = ItemGlaze.query.filter_by(item_id=item.id).filter_by(order=1).order_by('order').one_or_none()
-        glaze_3 = ItemGlaze.query.filter_by(item_id=item.id).filter_by(order=2).order_by('order').one_or_none()
+        glaze_list = [None] * 3
+        for i, glaze in enumerate(glaze_list):
+            glaze = ItemGlaze.query.filter_by(item_id=item.id).filter_by(order=i).order_by('order').one_or_none()
+            if glaze:
+                form.glaze_list[i].data = glaze.glaze_id
         form.name.data = item.name
         form.description.data = item.description
         form.temperature.data = item.temperature
         form.is_public.data = item.is_public
-        if glaze_1:
-            form.glaze_id_1.data = glaze_1.glaze_id
-        if glaze_2:
-            form.glaze_id_2.data = glaze_2.glaze_id
-        if glaze_3:
-            form.glaze_id_3.data = glaze_3.glaze_id
         form.clay_id.data = item.clay_id
         form.surface_id.data = item.surface_id
-        form.image.data = item.image_name
+        form.image_name = item.image_name
         form.submit.label.text = 'Изменить'
     return render_template('add_item.html', title='Изменение пробника', form=form)
 
@@ -199,7 +182,7 @@ def delete_item(item_id):
         # db.session.delete(item)
         item.delete_date = datetime.utcnow()
         db.session.commit()
-    return redirect(url_for('index'))
+    return redirect(url_for('list'))
 
 
 @app.route('/add_glaze', methods=['GET', 'POST'])
@@ -210,7 +193,7 @@ def add_glaze():
         glaze = Glaze(name=form.name.data, user_id=current_user.id)
         db.session.add(glaze)
         db.session.commit()
-        return redirect(url_for('index'))
+        return redirect(url_for('list'))
     return render_template('add_glaze.html', title='Добавление глазури', form=form)
 
 
@@ -222,7 +205,7 @@ def add_clay():
         clay = Clay(name=form.name.data, user_id=current_user.id)
         db.session.add(clay)
         db.session.commit()
-        return redirect(url_for('index'))
+        return redirect(url_for('list'))
     return render_template('add_clay.html', title='Добавление глины', form=form)
 
 
@@ -272,9 +255,7 @@ def recovery():
         return redirect(url_for('index'))
     form = RecoveryForm()
     form.recovery_flag = False
-    print("ttttt")
     if form.validate_on_submit():
-        print("232")
         user = form.find_user_with_data(form.userdata.data)
         if user is None:
             flash('Такое имя пользователя или e-mail в системе не найдены')

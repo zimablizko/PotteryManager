@@ -3,9 +3,9 @@ import string
 from datetime import datetime, timedelta
 
 from flask_login import UserMixin
-from sqlalchemy import desc
+from sqlalchemy import desc, cast, Date, func
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, session
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import db, login
@@ -18,6 +18,7 @@ class Clay(db.Model):
     name = db.Column(db.String(64))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     create_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    edit_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     delete_date = db.Column(db.DateTime, index=True)
 
     def __repr__(self):
@@ -29,6 +30,7 @@ class Glaze(db.Model):
     name = db.Column(db.String(64))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     create_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    edit_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     delete_date = db.Column(db.DateTime, index=True)
 
     def __repr__(self):
@@ -60,6 +62,7 @@ class Item(db.Model):
     image_name = db.Column(db.String(256))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     create_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    edit_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     delete_date = db.Column(db.DateTime, index=True)
     is_public = db.Column(db.Boolean)
 
@@ -68,6 +71,12 @@ class Item(db.Model):
 
     def get_author(self):
         return User.query.filter_by(id=self.user_id).first()
+
+    def get_edit_date(self):
+        if self.edit_date > self.create_date:
+            return self.edit_date.date()
+        else:
+            return self.create_date.date()
 
 
 class User(UserMixin, db.Model):
@@ -96,7 +105,7 @@ class User(UserMixin, db.Model):
         return Surface.query.order_by('id')
 
     def get_items(self):
-        return Item.query.filter_by(user_id=self.id).filter(Item.delete_date == None).order_by(desc('id'))
+        return Item.query.filter_by(user_id=self.id).filter(Item.delete_date == None).order_by(desc(Item.edit_date))
 
     def get_materials(self, table):
         return table.query.filter_by(user_id=self.id).order_by('id')
