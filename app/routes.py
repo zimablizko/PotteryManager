@@ -89,8 +89,7 @@ def add_item():
         #if form.image.data:
         #    utils.save_image(request.files['image'], item)
         if not form.name.data:
-            item.name = db.session.query(Clay).filter_by(id=item.clay_id).first().name + ': ' \
-                        + db.session.query(Glaze).filter_by(id=form.glaze_list[0].data).first().name
+            item.name = db.session.query(Clay).filter_by(id=item.clay_id).first().name + ': '
         db.session.add(item)
         item_id = db.session.query(func.max(Item.id)).scalar()
         # Обработка глазурей
@@ -136,8 +135,7 @@ def edit_item(item_id):
         # Сохранение полей пробника
         item = db.session.query(Item).filter(Item.id == item_id).one()
         if not form.name.data:
-            item.name = db.session.query(Clay).filter_by(id=item.clay_id).first().name + ': ' \
-                        + db.session.query(Glaze).filter_by(id=form.glaze_list[0].data).first().name
+            item.name = db.session.query(Clay).filter_by(id=item.clay_id).first().name + ': '
         else:
             item.name = form.name.data
         item.description = form.description.data
