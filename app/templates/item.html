@@ -7,8 +7,8 @@
         <div class="col-md-8 col-12">
 
             {% if item.get_main_image()%}
-            <a data-lightbox="{{ item.get_main_image().name }}" href="{{ url_for('images', image=item.get_main_image().name)}}">
-                <img class="card-img-top" src="{{ url_for('images', image=item.get_main_image().name)}}">
+            <a data-lightbox="{{ item.get_main_image() }}" href="{{ url_for('images', image=item.get_main_image())}}">
+                <img class="card-img-top" src="{{ url_for('images', image=item.get_main_image())}}">
             </a>
             {% else %}
             <p><b>Нет изображения</b></p>

@@ -1,8 +1,8 @@
             {% for item in items %}
                 {% if item.glazes.__len__()==1 and item.glazes[0]==g1.id and item.glazes[0]==g2.id %}
-                        {% if item.get_main_image().name%}
+                        {% if item.get_main_image()%}
                              <a href="{{ url_for('item', item_id=item.id)}}">
-                                <img style="width:180px"  src="{{ url_for('thumbnails', image=item.get_main_image().name)}}">
+                                <img style="width:180px"  src="{{ url_for('thumbnails', image=item.get_main_image())}}">
                              </a>
                         {% else %}
                             <p><b>{{ item.name }}</b></p>
@@ -10,9 +10,9 @@
                 {% elif item.glazes[1]==item.glazes[0]%}
                     {% if item.glazes[0]==g1.id%}
                         {% if item.glazes[1]==g2.id%}
-                            {% if item.get_main_image().name%}
+                            {% if item.get_main_image()%}
                                 <a href="{{ url_for('item', item_id=item.id)}}">
-                                    <img style="width:180px"  src="{{ url_for('thumbnails', image=item.get_main_image().name)}}">
+                                    <img style="width:180px"  src="{{ url_for('thumbnails', image=item.get_main_image())}}">
                                 </a>
                             {% else %}
                                 <p><b>{{ item.name }}</b></p>
@@ -21,9 +21,9 @@
                     {% endif %}
                 {% elif item.glazes[0]==g1.id%}
                     {% if item.glazes[1]==g2.id%}
-                        {% if item.get_main_image().name%}
+                        {% if item.get_main_image()%}
                              <a href="{{ url_for('item', item_id=item.id)}}">
-                                <img style="width:180px"  src="{{ url_for('thumbnails', image=item.get_main_image().name)}}">
+                                <img style="width:180px"  src="{{ url_for('thumbnails', image=item.get_main_image())}}">
                              </a>
                         {% else %}
                             <p><b>{{ item.name }}</b></p>

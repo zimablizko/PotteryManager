@@ -76,9 +76,9 @@ class Item(db.Model):
         item_image = ItemImage.query.filter_by(item_id=self.id).order_by(ItemImage.order).first()
         print(item_image)
         if item_image:
-            return Image.query.filter_by(id=item_image.image_id).first()
+            return Image.query.filter_by(id=item_image.image_id).first().name
         else:
-            return None
+            return self.image_name
 
     def get_edit_date(self):
         if self.edit_date > self.create_date:
