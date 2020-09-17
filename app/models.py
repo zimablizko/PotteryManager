@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from flask_login import UserMixin
 from sqlalchemy import desc, cast, Date, func
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, session
+from sqlalchemy.orm import relationship, session, load_only
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import db, login
@@ -74,11 +74,21 @@ class Item(db.Model):
 
     def get_main_image(self):
         item_image = ItemImage.query.filter_by(item_id=self.id).order_by(ItemImage.order).first()
-        print(item_image)
         if item_image:
             return Image.query.filter_by(id=item_image.image_id).first().name
         else:
             return self.image_name
+
+    def get_images(self):
+        images_id_list = db.session.query(ItemImage.image_id).filter_by(item_id=self.id).order_by(ItemImage.order).all()
+        if images_id_list:
+            images = []
+            # такой бред, потому что возвращаются туплы
+            for image_id, in images_id_list:
+                image = db.session.query(Image.name).filter_by(id=str(image_id)).first()
+                images.append(image[0])
+            return images
+        return None
 
     def get_edit_date(self):
         if self.edit_date > self.create_date:

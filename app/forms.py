@@ -67,7 +67,7 @@ class AddItemForm(FlaskForm):
         self.surface_id.choices = surfaces_choices
 
     name = StringField('Название пробника:', validators=[Optional(), length(max=256)])
-    description = TextAreaField('Описание:', validators=[Optional(), length(max=512)])
+    description = TextAreaField('Описание:', validators=[Optional(), length(max=500)])
     is_public = BooleanField('Публичный доступ:')
     temperature = IntegerField('Температура:', validators=[DataRequired()])
     glaze_list = FieldList(SelectField('Глазурь:', choices=None, validate_choice=False,
