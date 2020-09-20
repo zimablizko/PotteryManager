@@ -81,7 +81,6 @@ def item(item_id):
 @login_required
 def add_item():
     form = AddItemForm(None)
-    form.image_names = [None] * 3
     if form.validate_on_submit():
         item = Item(name=form.name.data, description=form.description.data, clay_id=form.clay_id.data,
                     surface_id=form.surface_id.data, user_id=current_user.id,
@@ -108,7 +107,7 @@ def add_item():
                 if item_glaze:
                     db.session.delete(item_glaze)
         # Обработка изображений
-        for i, item_image in enumerate([None] * app.config['IMAGE_MAX_COUNT']):
+        for i, item_image in enumerate(form.image_list):
             item_image = db.session.query(ItemImage).filter(ItemImage.item_id == item_id).filter(
                 ItemImage.order == i).one_or_none()
             if form.image_list[i].data:
@@ -182,28 +181,40 @@ def edit_item(item_id):
         return redirect(url_for('list'))
     else:
         item = Item.query.filter_by(id=item_id).one()
-        form.id = item.id
-        glaze_list = [None] * 3
-        for i, glaze in enumerate(glaze_list):
-            glaze = ItemGlaze.query.filter_by(item_id=item.id).filter_by(order=i).one_or_none()
-            if glaze:
-                form.glaze_list[i].data = glaze.glaze_id
-        form.image_names = [None] * 3
-        for i, image in enumerate(form.image_names):
-            item_image = ItemImage.query.filter_by(item_id=item.id).filter_by(order=i).one_or_none()
-            if item_image:
-                image = Image.query.filter_by(id=item_image.image_id).one_or_none()
-                if image:
-                    form.image_names[i] = image.name
-        form.name.data = item.name
-        form.description.data = item.description
-        form.temperature.data = item.temperature
-        form.is_public.data = item.is_public
-        form.clay_id.data = item.clay_id
-        form.surface_id.data = item.surface_id
-        #form.image_name = item.image_name
-        form.submit.label.text = 'Изменить'
-    return render_template('add_item.html', title='Изменение пробника', form=form)
+        if current_user.id == item.user_id:
+            form.id = item.id
+            glaze_list = [None] * 3
+            for i, glaze in enumerate(glaze_list):
+                glaze = ItemGlaze.query.filter_by(item_id=item.id).filter_by(order=i).one_or_none()
+                if glaze:
+                    form.glaze_list[i].data = glaze.glaze_id
+            for i, image in enumerate(form.image_list):
+                item_image = ItemImage.query.filter_by(item_id=item.id).filter_by(order=i).one_or_none()
+                if item_image:
+                    image = Image.query.filter_by(id=item_image.image_id).one_or_none()
+                    if image:
+                        form.image_list[i].data = image.name
+                        form.image_list[i].id = image.id
+            form.name.data = item.name
+            form.description.data = item.description
+            form.temperature.data = item.temperature
+            form.is_public.data = item.is_public
+            form.clay_id.data = item.clay_id
+            form.surface_id.data = item.surface_id
+            #form.image_name = item.image_name
+            form.submit.label.text = 'Изменить'
+            return render_template('add_item.html', title='Изменение пробника', form=form)
+        else:
+            return redirect(url_for('list'))
+
+
+@app.route('/edit_item/<item_id>/delete_image/<image_id>')
+@login_required
+def delete_image(image_id, item_id):
+    item_image = db.session.query(ItemImage).filter(ItemImage.item_id == item_id).filter(ItemImage.image_id == image_id).one()
+    print(item_image)
+    item_image.delete_image()
+    return redirect(url_for('edit_item', item_id=item_id))
 
 
 @app.route('/delete_item/<item_id>', methods=['GET', 'POST'])

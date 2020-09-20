@@ -114,6 +114,17 @@ class ItemImage(db.Model):
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
     order = db.Column(db.Integer)
 
+    def delete_image(self):
+        image_items_to_update = db.session.query(ItemImage).filter_by(item_id=self.item_id)\
+            .filter(ItemImage.order > self.order).all()
+        print(image_items_to_update)
+        if len(image_items_to_update) > 0:
+            for image_item in image_items_to_update:
+                print(image_item)
+                image_item.order -= 1
+        db.session.delete(self)
+        db.session.commit()
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
