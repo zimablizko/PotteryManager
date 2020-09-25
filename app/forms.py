@@ -8,7 +8,7 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField, Selec
     IntegerField, TextAreaField, SelectMultipleField, FieldList
 from wtforms.validators import DataRequired, ValidationError, Optional, length, EqualTo, Email
 
-from app.models import Item, Clay, Surface, Glaze, ItemGlaze, User
+from app.models import Item, ItemGlaze, User
 
 
 class ItemsForm(FlaskForm):
@@ -18,34 +18,28 @@ class ItemsForm(FlaskForm):
 class ListForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(ListForm, self).__init__(*args, **kwargs)
-        glazes_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_materials(Glaze)])
-        clays_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_materials(Clay)])
-        surfaces_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_surfaces()])
+        glazes_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_materials(1)])
+        clays_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_materials(2)])
         self.glaze_filter.choices = glazes_choices
         self.clay_filter.choices = clays_choices
-        self.surface_filter.choices = surfaces_choices
     glaze_filter = SelectField('Глазурь:', choices=None, coerce=int, validators=[Optional()])
     clay_filter = SelectField('Глина:', choices=None, coerce=int, validators=[Optional()])
-    surface_filter = SelectField('Поверхность:', choices=None, coerce=int, validators=[Optional()])
     submit = SubmitField('Фильтр')
 
 
 class TableForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(TableForm, self).__init__(*args, **kwargs)
-        glazes = current_user.get_materials(Glaze)
+        glazes = current_user.get_materials(1)
         glazes_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in glazes])
-        clays_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_materials(Clay)])
-        surfaces_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_surfaces()])
+        clays_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_materials(2)])
         self.glazes = glazes
         self.glaze_filter.choices = glazes_choices
         self.clay_filter.choices = clays_choices
-        self.surface_filter.choices = surfaces_choices
 
     glazes = None
     glaze_filter = SelectField('Глазурь:', choices=None, coerce=int, validators=[Optional()])
     clay_filter = SelectField('Глина:', choices=None, coerce=int, validators=[Optional()])
-    surface_filter = SelectField('Поверхность:', choices=None, coerce=int, validators=[Optional()])
     submit = SubmitField('Фильтр')
 
 
@@ -56,15 +50,13 @@ class ItemForm(FlaskForm):
 class AddItemForm(FlaskForm):
     def __init__(self, item_id, *args, **kwargs):
         super(AddItemForm, self).__init__(*args, **kwargs)
-        glazes_choices = [(c.id, c.name) for c in current_user.get_materials(Glaze)]
+        glazes_choices = [(c.id, c.name) for c in current_user.get_materials(1)]
         glazes_additional_choices = ([(0, '_нет_')]).__add__(glazes_choices)
-        clays_choices = [(c.id, c.name) for c in current_user.get_materials(Clay)]
-        surfaces_choices = [(c.id, c.name) for c in current_user.get_surfaces()]
+        clays_choices = [(c.id, c.name) for c in current_user.get_materials(2)]
         self.glaze_list[0].choices = glazes_choices
         self.glaze_list[1].choices = glazes_additional_choices
         self.glaze_list[2].choices = glazes_additional_choices
         self.clay_id.choices = clays_choices
-        self.surface_id.choices = surfaces_choices
 
     name = StringField('Название пробника:', validators=[Optional(), length(max=256)])
     description = TextAreaField('Описание:', validators=[Optional(), length(max=500)])
@@ -73,11 +65,24 @@ class AddItemForm(FlaskForm):
     glaze_list = FieldList(SelectField('Глазурь:', choices=None, validate_choice=False,
                              coerce=int), min_entries=3)
     clay_id = SelectField('Глина:', choices=None, validate_choice=False, coerce=int)
-    surface_id = SelectField('Поверхность:', choices=None, validate_choice=False,
-                             coerce=int)
     # image = FileField(u'Фото:', validators=[FileAllowed(['jpeg', 'jpg', 'png'], 'Images only!')])
     image_list = FieldList(FileField(u'Фото:', validators=[FileAllowed(['jpeg', 'jpg', 'png'], 'Images only!')]), min_entries=3)
     submit = SubmitField('Добавить')
+
+
+class AddMaterialForm(FlaskForm):
+    def __init__(self, *args, **kwargs):
+        super(AddMaterialForm, self).__init__(*args, **kwargs)
+        type_choices = [(c.id, c.name) for c in current_user.get_material_types()]
+        self.type_id.choices = type_choices
+
+    name = StringField('Название материала:', validators=[Optional(), length(max=256)])
+    type_id = SelectField('Тип материала:', choices=None, validate_choice=False, coerce=int)
+    submit = SubmitField('Добавить')
+
+
+class MaterialListForm(FlaskForm):
+    submit = SubmitField('Фильтр')
 
 
 class AddGlazeForm(FlaskForm):

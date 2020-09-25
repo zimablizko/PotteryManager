@@ -15,8 +15,8 @@ from wtforms.validators import Optional
 
 from app import app, db, utils
 from app.forms import LoginForm, AddItemForm, ListForm, AddGlazeForm, AddClayForm, TableForm, RegistrationForm, \
-    ItemForm, RecoveryForm, RecoveryPassForm, ItemsForm
-from app.models import Clay, Item, Surface, Glaze, ItemGlaze, User, ItemImage, Image
+    ItemForm, RecoveryForm, RecoveryPassForm, ItemsForm, MaterialListForm, AddMaterialForm
+from app.models import Item, ItemGlaze, User, ItemImage, Image, Material
 
 
 @app.route('/list', methods=['GET', 'POST'])
@@ -28,13 +28,12 @@ def list(page=1):
         items = current_user.get_items()
         if form.clay_filter.data > 0:
             items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
-        if form.surface_filter.data > 0:
-            items = items.filter(Item.surface_id.__eq__(form.surface_filter.data))
         if form.glaze_filter.data > 0:
             items = items.join(ItemGlaze).filter(ItemGlaze.glaze_id.__eq__(form.glaze_filter.data))
         items = items.paginate(page, app.config['ITEMS_PER_PAGE'], False)
     else:
         items = current_user.get_items().paginate(page, app.config['ITEMS_PER_PAGE'], False)
+        print(items)
     return render_template('list.html', form=form, title='Мои пробники', items=items)
 
 
@@ -57,8 +56,6 @@ def table():
         items = current_user.get_items()
         if form.clay_filter.data > 0:
             items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
-        if form.surface_filter.data > 0:
-            items = items.filter(Item.surface_id.__eq__(form.surface_filter.data))
         items = items.all()
     else:
         items = current_user.get_items().all()
@@ -83,12 +80,11 @@ def add_item():
     form = AddItemForm(None)
     if form.validate_on_submit():
         item = Item(name=form.name.data, description=form.description.data, clay_id=form.clay_id.data,
-                    surface_id=form.surface_id.data, user_id=current_user.id,
-                    temperature=form.temperature.data, is_public=form.is_public.data)
+                    user_id=current_user.id, temperature=form.temperature.data, is_public=form.is_public.data)
         #if form.image.data:
         #    utils.save_image(request.files['image'], item)
         if not form.name.data:
-            item.name = db.session.query(Clay).filter_by(id=item.clay_id).first().name + ': '
+            item.name = db.session.query(Material).filter_by(id=item.clay_id).first().name + ': '
         db.session.add(item)
         item_id = db.session.query(func.max(Item.id)).scalar()
         # Обработка глазурей
@@ -102,7 +98,7 @@ def add_item():
                     item_glaze = ItemGlaze(glaze_id=form.glaze_list[i].data, item_id=item_id, order=i)
                     db.session.add(item_glaze)
                 if not form.name.data:
-                    item.name += ' + ' + db.session.query(Glaze).filter_by(id=form.glaze_list[i].data).first().name
+                    item.name += ' + ' + db.session.query(Material).filter_by(id=form.glaze_list[i].data).first().name
             else:
                 if item_glaze:
                     db.session.delete(item_glaze)
@@ -134,13 +130,12 @@ def edit_item(item_id):
         # Сохранение полей пробника
         item = db.session.query(Item).filter(Item.id == item_id).one()
         if not form.name.data:
-            item.name = db.session.query(Clay).filter_by(id=item.clay_id).first().name + ': '
+            item.name = db.session.query(Material).filter_by(id=item.clay_id).first().name + ': '
         else:
             item.name = form.name.data
         item.description = form.description.data
         item.temperature = form.temperature.data
         item.clay_id = form.clay_id.data
-        item.surface_id = form.surface_id.data
         item.is_public = form.is_public.data
         item.edit_date = datetime.utcnow()
        # if form.image.data:
@@ -156,7 +151,7 @@ def edit_item(item_id):
                     item_glaze = ItemGlaze(glaze_id=form.glaze_list[i].data, item_id=item_id, order=i)
                     db.session.add(item_glaze)
                 if not form.name.data:
-                    item.name += ' + ' + db.session.query(Glaze).filter_by(id=form.glaze_list[i].data).first().name
+                    item.name += ' + ' + db.session.query(Material).filter_by(id=form.glaze_list[i].data).first().name
             else:
                 if item_glaze:
                     db.session.delete(item_glaze)
@@ -200,7 +195,6 @@ def edit_item(item_id):
             form.temperature.data = item.temperature
             form.is_public.data = item.is_public
             form.clay_id.data = item.clay_id
-            form.surface_id.data = item.surface_id
             #form.image_name = item.image_name
             form.submit.label.text = 'Изменить'
             return render_template('add_item.html', title='Изменение пробника', form=form)
@@ -222,38 +216,87 @@ def delete_image(image_id, item_id):
 def delete_item(item_id):
     item = db.session.query(Item).filter(Item.id == item_id).one()
     if item:
-        # item_glazes = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).all()
-        # if len(item_glazes) > 0:
-        #     for item_glaze in item_glazes:
-        #         db.session.delete(item_glaze)
-        # db.session.delete(item)
-        item.delete_date = datetime.utcnow()
-        db.session.commit()
+        if current_user.id == item.user_id:
+            item.delete_date = datetime.utcnow()
+            db.session.commit()
     return redirect(url_for('list'))
 
 
-@app.route('/add_glaze', methods=['GET', 'POST'])
+@app.route('/materials', methods=['GET', 'POST'])
+@app.route('/materials/<int:page>', methods=['GET', 'POST'])
 @login_required
-def add_glaze():
-    form = AddGlazeForm()
-    if form.validate_on_submit():
-        glaze = Glaze(name=form.name.data, user_id=current_user.id)
-        db.session.add(glaze)
-        db.session.commit()
-        return redirect(url_for('list'))
-    return render_template('add_glaze.html', title='Добавление глазури', form=form)
+def materials_list(page=1):
+    form = MaterialListForm()
+    materials = current_user.get_all_materials().all()
+    for mat in materials:
+        mat.type = 'test test test test test test test test '
+    print(materials)
+    return render_template('materials.html', form=form, title='Мои материалы', materials=materials)
 
 
-@app.route('/add_clay', methods=['GET', 'POST'])
+@app.route('/add_material', methods=['GET', 'POST'])
 @login_required
-def add_clay():
-    form = AddClayForm()
+def add_material():
+    form = AddMaterialForm()
     if form.validate_on_submit():
-        clay = Clay(name=form.name.data, user_id=current_user.id)
-        db.session.add(clay)
+        mat = Material(name=form.name.data, type_id=form.type_id.data, user_id=current_user.id)
+        db.session.add(mat)
         db.session.commit()
-        return redirect(url_for('list'))
-    return render_template('add_clay.html', title='Добавление глины', form=form)
+        return redirect(url_for('materials_list'))
+    return render_template('add_material.html', title='Добавление материала', form=form)
+
+
+@app.route('/edit_material/<material_id>', methods=['GET', 'POST'])
+@login_required
+def edit_material(material_id):
+    form = AddMaterialForm()
+    if form.validate_on_submit():
+        mat = db.session.query(Material).filter(Material.id == material_id).one()
+        mat.name = form.name.data
+        db.session.commit()
+        return redirect(url_for('materials_list'))
+    else:
+        mat = db.session.query(Material).filter(Material.id == material_id).one()
+        if current_user.id == mat.user_id:
+            form.name.data = mat.name
+            form.type_id.render_kw = {'disabled': 'disabled'}
+            form.submit.label.text = 'Изменить'
+            return render_template('add_material.html', title='Редактирование материала', form=form)
+        else:
+            return redirect(url_for('materials_list'))
+
+
+@app.route('/delete_material/<material_id>', methods=['GET', 'POST'])
+@login_required
+def delete_material(material_id):
+    mat = db.session.query(Material).filter(Material.id == material_id).one()
+    if mat:
+        if current_user.id == mat.user_id:
+            mat.delete_date = datetime.utcnow()
+            db.session.commit()
+    return redirect(url_for('materials_list'))
+# @app.route('/add_glaze', methods=['GET', 'POST'])
+# @login_required
+# def add_glaze():
+#     form = AddGlazeForm()
+#     if form.validate_on_submit():
+#         glaze = Glaze(name=form.name.data, user_id=current_user.id)
+#         db.session.add(glaze)
+#         db.session.commit()
+#         return redirect(url_for('list'))
+#     return render_template('add_glaze.html', title='Добавление глазури', form=form)
+#
+#
+# @app.route('/add_clay', methods=['GET', 'POST'])
+# @login_required
+# def add_clay():
+#     form = AddClayForm()
+#     if form.validate_on_submit():
+#         clay = Clay(name=form.name.data, user_id=current_user.id)
+#         db.session.add(clay)
+#         db.session.commit()
+#         return redirect(url_for('list'))
+#     return render_template('add_clay.html', title='Добавление глины', form=form)
 
 
 # ----------- USER STUFF ----------- #

@@ -13,41 +13,33 @@ from app import db, login
 
 # =Base = declarative_base()
 
-class Clay(db.Model):
+class MaterialType(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     name = db.Column(db.String(64))
+
+    def __repr__(self):
+        return 'MaterialType {}'.format(self.name)
+
+
+class Material(db.Model):
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    name = db.Column(db.String(64))
+    type_id = db.Column(db.Integer, db.ForeignKey('material_type.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     create_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     edit_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     delete_date = db.Column(db.DateTime, index=True)
 
     def __repr__(self):
-        return 'Clay {}'.format(self.name)
+        return 'Material {}'.format(self.name)
 
-
-class Glaze(db.Model):
-    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    name = db.Column(db.String(64))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    create_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    edit_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    delete_date = db.Column(db.DateTime, index=True)
-
-    def __repr__(self):
-        return 'Glaze {}'.format(self.name)
-
-
-class Surface(db.Model):
-    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    name = db.Column(db.String(64), index=True, unique=True)
-
-    def __repr__(self):
-        return 'Surface {}'.format(self.name)
+    def get_type(self):
+        return MaterialType.query.filter_by(id=self.type_id).first().name
 
 
 class ItemGlaze(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    glaze_id = db.Column(db.Integer, db.ForeignKey('glaze.id'))
+    glaze_id = db.Column(db.Integer, db.ForeignKey('material.id'))
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
     order = db.Column(db.Integer)
 
@@ -56,8 +48,7 @@ class Item(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     name = db.Column(db.String(256))
     description = db.Column(db.Text(512))
-    clay_id = db.Column(db.Integer, db.ForeignKey('clay.id'))
-    surface_id = db.Column(db.Integer, db.ForeignKey('surface.id'))
+    clay_id = db.Column(db.Integer, db.ForeignKey('material.id'))
     temperature = db.Column(db.Integer)
     image_name = db.Column(db.String(256))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -148,14 +139,20 @@ class User(UserMixin, db.Model):
         self.recovery_date = datetime.utcnow() + timedelta(days=1)
         return self.recovery_word
 
-    def get_surfaces(self):
-        return Surface.query.order_by('id')
+    def get_material_types(self):
+        return MaterialType.query.order_by('id')
 
     def get_items(self):
         return Item.query.filter_by(user_id=self.id).filter(Item.delete_date == None).order_by(desc(Item.edit_date))
 
-    def get_materials(self, table):
-        return table.query.filter_by(user_id=self.id).order_by('id')
+    def get_materials(self, type_id):
+        return Material.query.filter_by(user_id=self.id).filter_by(type_id=type_id).filter(Material.delete_date == None).order_by('id')
+
+    def get_all_materials(self):
+        return Material.query.filter_by(user_id=self.id).filter(Material.delete_date == None).order_by(desc('edit_date'))
+
+    def get_glazes(self):
+        return self.get_all_materials().filter_by(type_id=1)
 
     @login.user_loader
     def load_user(id):
