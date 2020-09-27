@@ -3,22 +3,22 @@
 
 <div class="container">
     <h1>{{item.name}}</h1>
-    <div class="row">
-        <div class="col-md-8 col-12">
 
-            {% if item.image_name%}
-            <a data-lightbox="{{ item.image_name }}" href="{{ url_for('images', image=item.image_name)}}">
-                <img class="card-img-top" src="{{ url_for('images', image=item.image_name)}}">
+    <div class="row row-cols-1 row-cols-md-3">
+        {% for image in item.get_images() %}
+        <div class="col mb-4">
+            <a data-lightbox="{{ image }}" href="{{ url_for('images', image=image)}}">
+                <img class="card-img-top" src="{{ url_for('images', image=image)}}">
             </a>
-            {% else %}
-            <p><b>Нет изображения</b></p>
-            {% endif %}
         </div>
-        <div class="col-md-4 col-12">
+        {% endfor %}
+    </div>
+    <div class="row">
+        <div class="col-12">
             <h5 class="card-title">{{ item.name }}</h5>
             <p class="card-text">{{ item.description }}</p>
             <p class="card-text">Температура: {{ item.temperature }}<br>
-            Автор: {{ item.get_author().username }} ({{item.get_edit_date()}})</p>
+                Автор: {{ item.get_author().username }} ({{item.get_edit_date()}})</p>
             {% if item.user_id==current_user.id %}
             <a href="{{ url_for('edit_item', item_id=item.id)}}" class="btn btn-sm btn-success">Изменить</a>
             {% endif %}
