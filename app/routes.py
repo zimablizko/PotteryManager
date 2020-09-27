@@ -271,7 +271,7 @@ def edit_material(material_id):
 def delete_material(material_id):
     mat = db.session.query(Material).filter(Material.id == material_id).one()
     if mat:
-        if current_user.id == mat.user_id:
+        if current_user.id == mat.user_id and mat.check_in_use() is False:
             mat.delete_date = datetime.utcnow()
             db.session.commit()
     return redirect(url_for('materials_list'))

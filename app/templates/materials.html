@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Мои материалы</h1>
+<h1>{{title}}</h1>
 
 <div class="table-responsive">
     <table class="table">
@@ -24,12 +24,18 @@
                     <li class="list-inline-item">
                         <a href="{{ url_for('edit_material', material_id=mat.id)}}"
                            class="btn btn-success btn-sm rounded-0" type="button" data-toggle="tooltip"
-                           data-placement="top" title="Edit"><i class="fa fa-edit"></i></a>
+                           data-placement="top" title="Изменить"><i class="fa fa-edit"></i></a>
                     </li>
                     <li class="list-inline-item">
+                        {% if mat.check_in_use() %}
+                        <a
+                           class="btn btn-danger btn-sm rounded-0" type="button" data-toggle="tooltip"
+                           data-placement="top"  disabled title="Невозможно удалить, используется в существующих пробниках" ><i class="fa fa-trash"></i></a>
+                        {% else %}
                         <a href="{{ url_for('delete_material', material_id=mat.id)}}"
                            class="btn btn-danger btn-sm rounded-0" type="button" data-toggle="tooltip"
-                           data-placement="top" title="Delete"><i class="fa fa-trash"></i></a>
+                           data-placement="top" title="Удалить"><i class="fa fa-trash"></i></a>
+                        {% endif %}
                     </li>
                 </ul>
             </td>

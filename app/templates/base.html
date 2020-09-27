@@ -54,35 +54,41 @@
 
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
-                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    {{ current_user.username }}
-                </a>
-                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                    <a class="dropdown-item" href="{{ url_for('logout') }}">Выйти</a>
-                </div>
-            </li>
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
+                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {{ current_user.username }}
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <a class="dropdown-item" href="{{ url_for('logout') }}">Выйти</a>
+                    </div>
+                </li>
                 <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('about') }}">О проекте</a>
+                    <a class="nav-link" href="{{ url_for('about') }}">О проекте</a>
                 </li>
             </ul>
         </div>
         {% endif %}
     </div>
 </nav>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-info" role="alert">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-        {% endwith %}
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-info" role="alert">{{ message }}</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
 
 <div class="container">
     {% block content %}{% endblock %}
 </div>
 
-<script type="text/javascript" src="{{ url_for('static', filename='lightbox2-2.11.1/js/lightbox-plus-jquery.js') }}"></script>
+<script type="text/javascript"
+        src="{{ url_for('static', filename='lightbox2-2.11.1/js/lightbox-plus-jquery.js') }}"></script>
+<script type="text/javascript">
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+</script>
 <!-- JS, Popper.js, and jQuery -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
         integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"

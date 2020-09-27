@@ -36,6 +36,14 @@ class Material(db.Model):
     def get_type(self):
         return MaterialType.query.filter_by(id=self.type_id).first().name
 
+    def check_in_use(self):
+        check_clay = Item.query.filter(Item.delete_date == None).filter(Item.clay_id == self.id).all()
+        check_glaze = Item.query.join(ItemGlaze).filter(ItemGlaze.glaze_id == self.id).filter(Item.delete_date == None).all()
+        if len(check_glaze) > 0 or len(check_clay) > 0:
+            return True
+        else:
+            return False
+
 
 class ItemGlaze(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -58,7 +66,7 @@ class Item(db.Model):
     is_public = db.Column(db.Boolean)
 
     def __repr__(self):
-        return 'Item {}, {}'.format(self.name, self.image_name)
+        return 'Item {}, {}, delete:{}'.format(self.id, self.name, self.delete_date)
 
     def get_author(self):
         return User.query.filter_by(id=self.user_id).first()
@@ -106,7 +114,7 @@ class ItemImage(db.Model):
     order = db.Column(db.Integer)
 
     def delete_image(self):
-        image_items_to_update = db.session.query(ItemImage).filter_by(item_id=self.item_id)\
+        image_items_to_update = db.session.query(ItemImage).filter_by(item_id=self.item_id) \
             .filter(ItemImage.order > self.order).all()
         print(image_items_to_update)
         if len(image_items_to_update) > 0:
@@ -146,10 +154,12 @@ class User(UserMixin, db.Model):
         return Item.query.filter_by(user_id=self.id).filter(Item.delete_date == None).order_by(desc(Item.edit_date))
 
     def get_materials(self, type_id):
-        return Material.query.filter_by(user_id=self.id).filter_by(type_id=type_id).filter(Material.delete_date == None).order_by('id')
+        return Material.query.filter_by(user_id=self.id).filter_by(type_id=type_id).filter(
+            Material.delete_date == None).order_by('id')
 
     def get_all_materials(self):
-        return Material.query.filter_by(user_id=self.id).filter(Material.delete_date == None).order_by(desc('edit_date'))
+        return Material.query.filter_by(user_id=self.id).filter(Material.delete_date == None).order_by(
+            desc('edit_date'))
 
     def get_glazes(self):
         return self.get_all_materials().filter_by(type_id=1)
