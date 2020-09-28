@@ -95,6 +95,19 @@ class Item(db.Model):
         else:
             return self.create_date.date()
 
+    def get_clay_name(self):
+        clay = Material.query.join(Item).filter(Item.id == self.id).first()
+        if clay:
+            return clay.name
+        else:
+            return None
+
+    def get_glazes(self):
+        glazes = Material.query.join(ItemGlaze).filter(ItemGlaze.item_id == self.id).all()
+        if glazes:
+            return glazes
+        else:
+            return None
 
 class Image(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)

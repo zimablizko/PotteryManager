@@ -5,6 +5,7 @@
     <title>{{ title }}</title>
     <link type="text/css" href="{{ url_for('static', filename='lightbox2-2.11.1/css/lightbox.css') }}" rel="stylesheet">
     <link type="text/css" href="{{ url_for('static', filename='css/base.css') }}" rel="stylesheet">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
           integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -19,7 +20,6 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
-
             {% if current_user.is_anonymous %}
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('login') }}">Войти</a>

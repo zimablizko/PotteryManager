@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>{{title}}</h1>
-
+{% include '_materials_paginator.html' %}
 <div class="table-responsive">
     <table class="table">
         <thead>
@@ -12,7 +12,7 @@
         </tr>
         </thead>
         <tbody>
-        {% for mat in materials %}
+        {% for mat in materials.items %}
         <tr>
             <td>
                 {{ mat.name }}
@@ -45,5 +45,6 @@
         </tbody>
     </table>
 </div>
-
+<hr>
+{% include '_materials_paginator.html' %}
 {% endblock %}

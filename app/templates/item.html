@@ -15,10 +15,16 @@
     </div>
     <div class="row">
         <div class="col-12">
-            <h5 class="card-title">{{ item.name }}</h5>
-            <p class="card-text">{{ item.description }}</p>
-            <p class="card-text">Температура: {{ item.temperature }}<br>
-                Автор: {{ item.get_author().username }} ({{item.get_edit_date()}})</p>
+            <p class="card-text"><b>Описание:</b> {{ item.description }}</p>
+            <p class="card-text"><b>Глина:</b> {{ item.get_clay_name() }}</p>
+            <p class="card-text"><b>Глазурь:</b></p>
+            <ol class="item-info-list">
+                {% for glaze in item.get_glazes() %}
+                <li>{{glaze.name}}</li>
+                {% endfor %}
+            </ol>
+            <p class="card-text"><b>Температура:</b> {{ item.temperature }}</p>
+            <p class="card-text"><b>Автор:</b> {{ item.get_author().username }} ({{item.get_edit_date()}})</p>
             {% if item.user_id==current_user.id %}
             <a href="{{ url_for('edit_item', item_id=item.id)}}" class="btn btn-sm btn-success">Изменить</a>
             {% endif %}

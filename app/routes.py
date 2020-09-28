@@ -98,7 +98,9 @@ def add_item():
                     item_glaze = ItemGlaze(glaze_id=form.glaze_list[i].data, item_id=item_id, order=i)
                     db.session.add(item_glaze)
                 if not form.name.data:
-                    item.name += ' + ' + db.session.query(Material).filter_by(id=form.glaze_list[i].data).first().name
+                    if i > 0:
+                        item.name += ' + '
+                    item.name += db.session.query(Material).filter_by(id=form.glaze_list[i].data).first().name
             else:
                 if item_glaze:
                     db.session.delete(item_glaze)
@@ -151,7 +153,9 @@ def edit_item(item_id):
                     item_glaze = ItemGlaze(glaze_id=form.glaze_list[i].data, item_id=item_id, order=i)
                     db.session.add(item_glaze)
                 if not form.name.data:
-                    item.name += ' + ' + db.session.query(Material).filter_by(id=form.glaze_list[i].data).first().name
+                    if i > 0:
+                        item.name += ' + '
+                    item.name += db.session.query(Material).filter_by(id=form.glaze_list[i].data).first().name
             else:
                 if item_glaze:
                     db.session.delete(item_glaze)
@@ -227,10 +231,7 @@ def delete_item(item_id):
 @login_required
 def materials_list(page=1):
     form = MaterialListForm()
-    materials = current_user.get_all_materials().all()
-    for mat in materials:
-        mat.type = 'test test test test test test test test '
-    print(materials)
+    materials = current_user.get_all_materials().paginate(page, app.config['MATERIALS_PER_PAGE'], False)
     return render_template('materials.html', form=form, title='Мои материалы', materials=materials)
 
 
