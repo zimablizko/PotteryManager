@@ -256,9 +256,9 @@ def edit_material(material_id):
         db.session.commit()
         return redirect(url_for('materials_list'))
     else:
-        mat = db.session.query(Material).filter(Material.id == material_id).one()
-        if current_user.id == mat.user_id:
-            form.name.data = mat.name
+        form.mat = db.session.query(Material).filter(Material.id == material_id).one()
+        if current_user.id == form.mat.user_id:
+            form.name.data = form.mat.name
             form.type_id.render_kw = {'disabled': 'disabled'}
             form.submit.label.text = 'Изменить'
             return render_template('add_material.html', title='Редактирование материала', form=form)
