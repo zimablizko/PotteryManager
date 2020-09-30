@@ -56,6 +56,9 @@ def table():
         items = current_user.get_items()
         if form.clay_filter.data > 0:
             items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
+        if len(form.glaze_filter.data) > 0:
+            items = items.join(ItemGlaze).filter(ItemGlaze.glaze_id.in_(form.glaze_filter.data))
+            form.glazes = Material.query.filter(Material.id.in_(form.glaze_filter.data)).all()
         items = items.all()
     else:
         items = current_user.get_items().all()

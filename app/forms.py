@@ -31,14 +31,15 @@ class TableForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(TableForm, self).__init__(*args, **kwargs)
         glazes = current_user.get_materials(1)
-        glazes_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in glazes])
+        glazes_choices = [(c.id, c.name) for c in glazes]
         clays_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_materials(2)])
         self.glazes = glazes
         self.glaze_filter.choices = glazes_choices
         self.clay_filter.choices = clays_choices
 
     glazes = None
-    glaze_filter = SelectField('Глазурь:', choices=None, coerce=int, validators=[Optional()])
+    #glaze_filter = SelectField('Глазурь:', choices=None, coerce=int, validators=[Optional()])
+    glaze_filter = SelectMultipleField('Глазурь:', choices=None, coerce=int, validators=[Optional()])
     clay_filter = SelectField('Глина:', choices=None, coerce=int, validators=[Optional()])
     submit = SubmitField('Фильтр')
 
