@@ -39,7 +39,7 @@ class TableForm(FlaskForm):
 
     glazes = None
     #glaze_filter = SelectField('Глазурь:', choices=None, coerce=int, validators=[Optional()])
-    glaze_filter = SelectMultipleField('Глазурь:', choices=None, coerce=int, validators=[Optional()])
+    glaze_filter = SelectMultipleField('Глазурь:', choices=None, coerce=int, validators=[Optional()], render_kw={'data-live-search':'true'})
     clay_filter = SelectField('Глина:', choices=None, coerce=int, validators=[Optional()])
     submit = SubmitField('Фильтр')
 

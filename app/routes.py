@@ -52,11 +52,25 @@ def index(page=1):
 @login_required
 def table():
     form = TableForm()
-    if form.validate_on_submit():
+    # if form.validate_on_submit():
+    #     items = current_user.get_items()
+    #     if form.clay_filter.data > 0:
+    #         items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
+    #     if len(form.glaze_filter.data) > 0:
+    #         items = items.join(ItemGlaze).filter(ItemGlaze.glaze_id.in_(form.glaze_filter.data))
+    #         form.glazes = Material.query.filter(Material.id.in_(form.glaze_filter.data)).all()
+    #     items = items.all()
+    if len(request.args) > 0:
+        print(request.query_string.decode())
         items = current_user.get_items()
-        if form.clay_filter.data > 0:
+        if int(request.args['clay_filter']) > 0:
+            form.clay_filter.data = int(request.args['clay_filter'])
             items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
-        if len(form.glaze_filter.data) > 0:
+        if len(request.args.getlist('glaze_filter')) > 0:
+            _glaze_list = []
+            for glaze in request.args.getlist('glaze_filter'):
+                _glaze_list.append(int(glaze))
+            form.glaze_filter.data = _glaze_list
             items = items.join(ItemGlaze).filter(ItemGlaze.glaze_id.in_(form.glaze_filter.data))
             form.glazes = Material.query.filter(Material.id.in_(form.glaze_filter.data)).all()
         items = items.all()
