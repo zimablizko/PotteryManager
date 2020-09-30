@@ -45,7 +45,7 @@ def list(page=1):
 def index(page=1):
     form = ItemsForm()
     public_items = form.get_public_items().paginate(page, app.config['ITEMS_PER_PAGE'], False)
-    return render_template('items.html', form=form, title='Публичные пробники', items=public_items)
+    return render_template('items.html', form=form, title='My Glazes', items=public_items)
 
 
 @app.route('/table', methods=['GET', 'POST'])

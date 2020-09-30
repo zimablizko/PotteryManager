@@ -2,7 +2,7 @@
                 {% if item.glazes.__len__()==1 and item.glazes[0]==g1.id and item.glazes[0]==g2.id %}
                         {% if item.get_main_image()%}
                              <a href="{{ url_for('item', item_id=item.id)}}">
-                                <img style="width:180px"  src="{{ url_for('thumbnails', image=item.get_main_image())}}">
+                                <img style="width:150px"  src="{{ url_for('thumbnails', image=item.get_main_image())}}">
                              </a>
                         {% else %}
                             <p><b>{{ item.name }}</b></p>
@@ -12,7 +12,7 @@
                         {% if item.glazes[1]==g2.id%}
                             {% if item.get_main_image()%}
                                 <a href="{{ url_for('item', item_id=item.id)}}">
-                                    <img style="width:180px"  src="{{ url_for('thumbnails', image=item.get_main_image())}}">
+                                    <img style="width:150px"  src="{{ url_for('thumbnails', image=item.get_main_image())}}">
                                 </a>
                             {% else %}
                                 <p><b>{{ item.name }}</b></p>
@@ -23,7 +23,7 @@
                     {% if item.glazes[1]==g2.id%}
                         {% if item.get_main_image()%}
                              <a href="{{ url_for('item', item_id=item.id)}}">
-                                <img style="width:180px"  src="{{ url_for('thumbnails', image=item.get_main_image())}}">
+                                <img style="width:150px"  src="{{ url_for('thumbnails', image=item.get_main_image())}}">
                              </a>
                         {% else %}
                             <p><b>{{ item.name }}</b></p>
