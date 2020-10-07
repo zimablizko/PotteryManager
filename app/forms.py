@@ -5,7 +5,7 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileRequired
 from sqlalchemy import select, desc
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, FileField, RadioField, \
-    IntegerField, TextAreaField, SelectMultipleField, FieldList
+    IntegerField, TextAreaField, SelectMultipleField, FieldList, MultipleFileField
 from wtforms.validators import DataRequired, ValidationError, Optional, length, EqualTo, Email
 
 from app.models import Item, ItemGlaze, User
@@ -18,11 +18,11 @@ class ItemsForm(FlaskForm):
 class ListForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(ListForm, self).__init__(*args, **kwargs)
-        glazes_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_materials(1)])
+        glazes_choices = [(c.id, c.name) for c in current_user.get_materials(1)]
         clays_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_materials(2)])
         self.glaze_filter.choices = glazes_choices
         self.clay_filter.choices = clays_choices
-    glaze_filter = SelectField('Глазурь:', choices=None, coerce=int, validators=[Optional()])
+    glaze_filter = SelectMultipleField('Глазурь:', choices=None, coerce=int, validators=[Optional()], render_kw={'data-live-search':'true'})
     clay_filter = SelectField('Глина:', choices=None, coerce=int, validators=[Optional()])
     submit = SubmitField('Фильтр')
 
@@ -68,6 +68,7 @@ class AddItemForm(FlaskForm):
     clay_id = SelectField('Глина:', choices=None, validate_choice=False, coerce=int)
     # image = FileField(u'Фото:', validators=[FileAllowed(['jpeg', 'jpg', 'png'], 'Images only!')])
     image_list = FieldList(FileField(u'Фото:', validators=[FileAllowed(['jpeg', 'jpg', 'png'], 'Images only!')]), min_entries=3)
+    images = MultipleFileField(u'Фото:', validators=[FileAllowed(['jpeg', 'jpg', 'png'], 'Images only!')])
     submit = SubmitField('Добавить')
 
 

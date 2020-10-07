@@ -24,16 +24,33 @@ from app.models import Item, ItemGlaze, User, ItemImage, Image, Material
 @login_required
 def list(page=1):
     form = ListForm()
-    if form.validate_on_submit():
+    if len(request.args) > 0:
         items = current_user.get_items()
-        if form.clay_filter.data > 0:
-            items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
-        if form.glaze_filter.data > 0:
-            items = items.join(ItemGlaze).filter(ItemGlaze.glaze_id.__eq__(form.glaze_filter.data))
+        # if request.args['clay_filter']:
+        #     if int(request.args['clay_filter']) > 0:
+        #         form.clay_filter.data = int(request.args['clay_filter'])
+        #         items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
+        if len(request.args.getlist('glaze_filter')) > 0:
+            _glaze_list = []
+            for glaze in request.args.getlist('glaze_filter'):
+                _glaze_list.append(int(glaze))
+            form.glaze_filter.data = _glaze_list
+            items = items.join(ItemGlaze).filter(ItemGlaze.glaze_id.in_(form.glaze_filter.data))
+            print(items.all())
         items = items.paginate(page, app.config['ITEMS_PER_PAGE'], False)
+        print(items)
     else:
         items = current_user.get_items().paginate(page, app.config['ITEMS_PER_PAGE'], False)
-        print(items)
+    # if form.validate_on_submit():
+    #     items = current_user.get_items()
+    #     if form.clay_filter.data > 0:
+    #         items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
+    #     if form.glaze_filter.data > 0:
+    #         items = items.join(ItemGlaze).filter(ItemGlaze.glaze_id.__eq__(form.glaze_filter.data))
+    #     items = items.paginate(page, app.config['ITEMS_PER_PAGE'], False)
+    # else:
+    #     items = current_user.get_items().paginate(page, app.config['ITEMS_PER_PAGE'], False)
+    #     print(items)
     return render_template('list.html', form=form, title='Мои пробники', items=items)
 
 
@@ -122,19 +139,18 @@ def add_item():
                 if item_glaze:
                     db.session.delete(item_glaze)
         # Обработка изображений
-        for i, item_image in enumerate(form.image_list):
-            item_image = db.session.query(ItemImage).filter(ItemImage.item_id == item_id).filter(
-                ItemImage.order == i).one_or_none()
-            if form.image_list[i].data:
+        image_list = form.images.data
+        print(image_list)
+        order = 0
+        for image_file in image_list:
+            if image_file:
                 image = Image()
-                utils.save_image(request.files['image_list-'+str(i)], image)
+                utils.save_image(image_file, image)
                 db.session.add(image)
                 image_id = db.session.query(func.max(Image.id)).scalar()
-                if item_image:
-                    item_image.image_id = image_id
-                else:
-                    item_image = ItemImage(image_id=image_id, item_id=item_id, order=i)
-                    db.session.add(item_image)
+                item_image = ItemImage(image_id=image_id, item_id=item_id, order=order)
+                db.session.add(item_image)
+                order += 1
         flash('Пробник {} добавлен!'.format(item.name))
         db.session.commit()
         return redirect(url_for('list'))
@@ -177,27 +193,26 @@ def edit_item(item_id):
                 if item_glaze:
                     db.session.delete(item_glaze)
         # Обработка изображений
-        print("tetetet")
-        print(form.image_list)
-        for i, item_image in enumerate([None] * app.config['IMAGE_MAX_COUNT']):
-            item_image = db.session.query(ItemImage).filter(ItemImage.item_id == item_id).filter(
-                ItemImage.order == i).one_or_none()
-            if form.image_list[i].data:
-                print(form.image_list[i].data)
+        image_list = form.images.data
+        next_order = 0
+        if db.session.query(ItemImage).filter(ItemImage.item_id == item_id).all():
+            next_order = db.session.query(func.max(ItemImage.order)).filter(ItemImage.item_id == item_id).scalar() + 1
+        print(image_list)
+        for image_file in image_list:
+            if image_file:
                 image = Image()
-                utils.save_image(request.files['image_list-' + str(i)], image)
+                utils.save_image(image_file, image)
                 db.session.add(image)
                 image_id = db.session.query(func.max(Image.id)).scalar()
-                if item_image:
-                    item_image.image_id = image_id
-                else:
-                    item_image = ItemImage(image_id=image_id, item_id=item_id, order=i)
-                    db.session.add(item_image)
+                item_image = ItemImage(image_id=image_id, item_id=item_id, order=next_order)
+                next_order += 1
+                db.session.add(item_image)
         db.session.commit()
         return redirect(url_for('list'))
     else:
         item = Item.query.filter_by(id=item_id).one()
         if current_user.id == item.user_id:
+            form.item = item
             form.id = item.id
             glaze_list = [None] * 3
             for i, glaze in enumerate(glaze_list):
@@ -227,8 +242,15 @@ def edit_item(item_id):
 @login_required
 def delete_image(image_id, item_id):
     item_image = db.session.query(ItemImage).filter(ItemImage.item_id == item_id).filter(ItemImage.image_id == image_id).one()
-    print(item_image)
     item_image.delete_image()
+    return redirect(url_for('edit_item', item_id=item_id))
+
+
+@app.route('/edit_item/<item_id>/make_image_first/<image_id>')
+@login_required
+def make_image_first(image_id, item_id):
+    item_image = db.session.query(ItemImage).filter(ItemImage.item_id == item_id).filter(ItemImage.image_id == image_id).one()
+    item_image.make_image_first()
     return redirect(url_for('edit_item', item_id=item_id))
 
 

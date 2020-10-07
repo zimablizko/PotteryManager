@@ -84,10 +84,11 @@ class Item(db.Model):
             images = []
             # такой бред, потому что возвращаются туплы
             for image_id, in images_id_list:
-                image = db.session.query(Image.name).filter_by(id=str(image_id)).first()
-                images.append(image[0])
+                image = db.session.query(Image).filter_by(id=str(image_id)).first()
+                images.append(image)
+            print(images)
             return images
-        return None
+        return []
 
     def get_edit_date(self):
         if self.edit_date > self.create_date:
@@ -135,6 +136,16 @@ class ItemImage(db.Model):
                 print(image_item)
                 image_item.order -= 1
         db.session.delete(self)
+        db.session.commit()
+
+    def make_image_first(self):
+        image_items_to_update = db.session.query(ItemImage).filter_by(item_id=self.item_id).filter(ItemImage.order < self.order).all()
+        print(image_items_to_update)
+        if len(image_items_to_update) > 0:
+            for image_item in image_items_to_update:
+                print(image_item)
+                image_item.order += 1
+        self.order = 0
         db.session.commit()
 
 

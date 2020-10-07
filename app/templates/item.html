@@ -7,8 +7,8 @@
     <div class="row row-cols-1 row-cols-md-3">
         {% for image in item.get_images() %}
         <div class="col mb-4">
-            <a data-lightbox="{{ image }}" href="{{ url_for('images', image=image)}}">
-                <img class="card-img-top" src="{{ url_for('images', image=image)}}">
+            <a data-lightbox="{{ image }}" href="{{ url_for('images', image=image.name)}}">
+                <img class="card-img-top" src="{{ url_for('thumbnails', image=image.name)}}">
             </a>
         </div>
         {% endfor %}

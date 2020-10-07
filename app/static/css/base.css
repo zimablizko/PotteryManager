@@ -9,10 +9,23 @@
     z-index: 100;
 }
 
+.img-wrap .img-make-first {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    z-index: 100;
+}
+
 .item-info-list {
     margin-top: -10px;
 }
 
 .table td {
     padding: .15rem
+}
+
+.custom-multi-select{
+    width: 100%;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
 }

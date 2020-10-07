@@ -57,25 +57,50 @@
             {% endfor %}
         </div>
     </div>
+    <!--    <div class="form-row">
+            {% for image in form.image_list %}
+                <div class="form-group col-md-4">
+                    {{ image.label }}<br>
+                    {{ image(size=1,class="form-control") }}<br>
+                    {% for error in image.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
+                    {% if image.data %}
+                        <div class="img-wrap">
+                            <a href="{{ url_for('delete_image', item_id=form.id, image_id=image.id)}}" class="btn btn-danger btn-lg rounded-0 img-delete" type="button" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fa fa-trash"></i></a>
+                            <img class="card-img-top" src="{{ url_for('thumbnails', image=image.data)}}">
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>-->
     <div class="form-row">
-        {% for image in form.image_list %}
-            <div class="form-group col-md-4">
-                {{ image.label }}<br>
-                {{ image(size=1,class="form-control") }}<br>
-                {% for error in image.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-                {% endfor %}
-                {% if image.data %}
-                    <div class="img-wrap">
-                        <a href="{{ url_for('delete_image', item_id=form.id, image_id=image.id)}}" class="btn btn-danger btn-lg rounded-0 img-delete" type="button" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fa fa-trash"></i></a>
-<!--                        <span class="img-delete">&times;</span>-->
-                        <img class="card-img-top" src="{{ url_for('thumbnails', image=image.data)}}">
-                    </div>
-                {% endif %}
+        <div class="form-group col-md-4">
+            {{ form.images.label }}<br>
+            {{ form.images(size=1,class="form-control") }}<br>
+            {% for error in form.images.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% if form.item %}
+    <div class="row row-cols-1 row-cols-md-4">
+        {% for image in form.item.get_images() %}
+        <div class="col mb-4">
+            <div class="img-wrap">
+                <a href="{{ url_for('delete_image', item_id=form.id, image_id=image.id)}}"
+                   class="btn btn-danger btn-lg rounded-0 img-delete" type="button" data-toggle="tooltip"
+                   data-placement="top" title="Удалить"><i class="fa fa-trash"></i></a>
+                <a href="{{ url_for('make_image_first', item_id=form.id, image_id=image.id)}}"
+                   class="btn btn-info btn-lg rounded-0 img-make-first" type="button" data-toggle="tooltip"
+                   data-placement="top" title="Сделать первой"><i class="fa fa-arrow-circle-up"></i></a>
+                <img class="card-img-top" src="{{ url_for('thumbnails', image=image.name)}}">
             </div>
+        </div>
         {% endfor %}
     </div>
-<hr>
+    {% endif %}
+    <hr>
     <div class="form-row">
         <div class="form-group col-md-4">
             {{ form.is_public.label }}
