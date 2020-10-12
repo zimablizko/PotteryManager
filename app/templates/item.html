@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="container">
+
     <h1>{{item.name}}</h1>
 
-    <div class="row row-cols-1 row-cols-md-3">
+    <div class="row row-cols-1 row-cols-md-4">
         {% for image in item.get_images() %}
         <div class="col mb-4">
             <a data-lightbox="{{ image }}" href="{{ url_for('images', image=image.name)}}">
@@ -30,5 +30,5 @@
             {% endif %}
         </div>
     </div>
-</div>
+
 {% endblock %}
