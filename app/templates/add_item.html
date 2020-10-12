@@ -57,23 +57,6 @@
             {% endfor %}
         </div>
     </div>
-    <!--    <div class="form-row">
-            {% for image in form.image_list %}
-                <div class="form-group col-md-4">
-                    {{ image.label }}<br>
-                    {{ image(size=1,class="form-control") }}<br>
-                    {% for error in image.errors %}
-                    <span style="color: red;">[{{ error }}]</span>
-                    {% endfor %}
-                    {% if image.data %}
-                        <div class="img-wrap">
-                            <a href="{{ url_for('delete_image', item_id=form.id, image_id=image.id)}}" class="btn btn-danger btn-lg rounded-0 img-delete" type="button" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fa fa-trash"></i></a>
-                            <img class="card-img-top" src="{{ url_for('thumbnails', image=image.data)}}">
-                        </div>
-                    {% endif %}
-                </div>
-            {% endfor %}
-        </div>-->
     <div class="form-row">
         <div class="form-group col-md-4">
             {{ form.images.label }}<br>

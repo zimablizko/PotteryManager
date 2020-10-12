@@ -26,10 +26,11 @@ def list(page=1):
     form = ListForm()
     if len(request.args) > 0:
         items = current_user.get_items()
-        # if request.args['clay_filter']:
-        #     if int(request.args['clay_filter']) > 0:
-        #         form.clay_filter.data = int(request.args['clay_filter'])
-        #         items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
+        print(request.args['clay_filter'])
+        if request.args['clay_filter']:
+            if int(request.args['clay_filter']) > 0:
+                form.clay_filter.data = int(request.args['clay_filter'])
+                items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
         if len(request.args.getlist('glaze_filter')) > 0:
             _glaze_list = []
             for glaze in request.args.getlist('glaze_filter'):
@@ -173,9 +174,6 @@ def edit_item(item_id):
         item.clay_id = form.clay_id.data
         item.is_public = form.is_public.data
         item.edit_date = datetime.utcnow()
-       # if form.image.data:
-        #    utils.save_image(request.files['image'], item)
-        # Обработка глазурей
         for i, item_glaze in enumerate([None] * app.config['GLAZE_MAX_COUNT']):
             item_glaze = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).filter(
                 ItemGlaze.order == i).one_or_none()
@@ -232,7 +230,6 @@ def edit_item(item_id):
             form.is_public.data = item.is_public
             form.clay_id.data = item.clay_id
             #form.image_name = item.image_name
-            form.submit.label.text = 'Изменить'
             return render_template('add_item.html', title='Изменение пробника', form=form)
         else:
             return redirect(url_for('list'))
@@ -300,7 +297,6 @@ def edit_material(material_id):
         if current_user.id == form.mat.user_id:
             form.name.data = form.mat.name
             form.type_id.render_kw = {'disabled': 'disabled'}
-            form.submit.label.text = 'Изменить'
             return render_template('add_material.html', title='Редактирование материала', form=form)
         else:
             return redirect(url_for('materials_list'))

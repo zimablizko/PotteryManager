@@ -23,7 +23,7 @@ class ListForm(FlaskForm):
         self.glaze_filter.choices = glazes_choices
         self.clay_filter.choices = clays_choices
     glaze_filter = SelectMultipleField('Глазурь:', choices=None, coerce=int, validators=[Optional()], render_kw={'data-live-search':'true'})
-    clay_filter = SelectField('Глина:', choices=None, coerce=int, validators=[Optional()])
+    clay_filter = SelectField('Глина:', choices=None, validators=[Optional()])
     submit = SubmitField('Фильтр')
 
 
@@ -58,18 +58,21 @@ class AddItemForm(FlaskForm):
         self.glaze_list[1].choices = glazes_additional_choices
         self.glaze_list[2].choices = glazes_additional_choices
         self.clay_id.choices = clays_choices
+        self.glaze_list[0].label = "Глазурь 1:"
+        self.glaze_list[1].label = "Глазурь 2:"
+        self.glaze_list[2].label = "Глазурь 3:"
 
     name = StringField('Название пробника:', validators=[Optional(), length(max=256)])
     description = TextAreaField('Описание:', validators=[Optional(), length(max=500)])
     is_public = BooleanField('Публичный доступ:')
     temperature = IntegerField('Температура:', validators=[DataRequired()])
-    glaze_list = FieldList(SelectField('Глазурь:', choices=None, validate_choice=False,
+    glaze_list = FieldList(SelectField('', choices=None, validate_choice=False,
                              coerce=int), min_entries=3)
     clay_id = SelectField('Глина:', choices=None, validate_choice=False, coerce=int)
     # image = FileField(u'Фото:', validators=[FileAllowed(['jpeg', 'jpg', 'png'], 'Images only!')])
     image_list = FieldList(FileField(u'Фото:', validators=[FileAllowed(['jpeg', 'jpg', 'png'], 'Images only!')]), min_entries=3)
     images = MultipleFileField(u'Фото:', validators=[FileAllowed(['jpeg', 'jpg', 'png'], 'Images only!')])
-    submit = SubmitField('Добавить')
+    submit = SubmitField('Готово')
 
 
 class AddMaterialForm(FlaskForm):
@@ -80,7 +83,7 @@ class AddMaterialForm(FlaskForm):
 
     name = StringField('Название материала:', validators=[Optional(), length(max=256)])
     type_id = SelectField('Тип материала:', choices=None, validate_choice=False, coerce=int)
-    submit = SubmitField('Добавить')
+    submit = SubmitField('Готово')
 
 
 class MaterialListForm(FlaskForm):
