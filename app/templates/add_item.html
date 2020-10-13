@@ -71,6 +71,7 @@
         {% for image in form.item.get_images() %}
         <div class="col mb-4">
             <div class="img-wrap">
+                <!--                <a href="{{ url_for('edit_item', item_id=form.id, delete_image=image.id)}}"-->
                 <a href="{{ url_for('delete_image', item_id=form.id, image_id=image.id)}}"
                    class="btn btn-danger btn-lg rounded-0 img-delete" type="button" data-toggle="tooltip"
                    data-placement="top" title="Удалить"><i class="fa fa-trash"></i></a>
