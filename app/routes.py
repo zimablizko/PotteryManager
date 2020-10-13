@@ -101,7 +101,9 @@ def table():
 @app.route('/item/<item_id>', methods=['GET', 'POST'])
 def item(item_id):
     form = ItemForm(item_id)
-    item = db.session.query(Item).filter(Item.id == item_id).one()
+    item = db.session.query(Item).filter(Item.id == item_id).one_or_none()
+    if item is None:
+        return render_template('error.html', error="Пробник не найден")
     if not item.is_public and (current_user.is_anonymous or current_user.id != item.user_id):
         return render_template('error.html', error="Ошибка доступа")
     return render_template('item.html', form=form, item=item)
