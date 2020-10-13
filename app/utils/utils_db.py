@@ -4,13 +4,13 @@ import random
 
 from datetime import datetime
 
-
+import PIL
 from sqlalchemy import func
 
 from app import app
-from PIL import Image
 
-from app.models import Material, Item, ItemGlaze, ItemImage
+
+from app.models import Material, Item, ItemGlaze, ItemImage, Image
 
 
 # присвоение картинки уникального имени и сохранение её на диске
@@ -19,7 +19,7 @@ def save_image(file, image):
         file.filename.split('.').pop())
     file.save(os.path.join(app.config['IMAGE_FOLDER'], filename))
     image.name = filename
-    image_file = Image.open(os.path.join(app.config['IMAGE_FOLDER'], image.name))
+    image_file = PIL.Image.open(os.path.join(app.config['IMAGE_FOLDER'], image.name))
     image_file.thumbnail((800, 800))
     image_file.save(os.path.join(app.config['THUMBNAIL_FOLDER'], image.name))
 
