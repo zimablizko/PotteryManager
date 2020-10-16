@@ -5,6 +5,7 @@ import random
 from datetime import datetime
 
 import PIL
+from PIL import ImageOps
 from sqlalchemy import func
 
 from app import app
@@ -20,8 +21,9 @@ def save_image(file, image):
     file.save(os.path.join(app.config['IMAGE_FOLDER'], filename))
     image.name = filename
     image_file = PIL.Image.open(os.path.join(app.config['IMAGE_FOLDER'], image.name))
-    image_file.thumbnail((800, 800))
-    image_file.save(os.path.join(app.config['THUMBNAIL_FOLDER'], image.name))
+    #image_file.thumbnail((800, 800))
+    thumb = ImageOps.fit(image_file, (800, 800), PIL.Image.ANTIALIAS)
+    thumb.save(os.path.join(app.config['THUMBNAIL_FOLDER'], image.name))
 
 
 def save_item(item_id, form, db):
