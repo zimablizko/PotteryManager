@@ -1,15 +1,12 @@
 <div class="card">
     {% if item.get_main_image()%}
-    <a data-lightbox="{{ item.get_main_image() }}" href="{{ url_for('images', image=item.get_main_image())}}">
+    <a href="{{ url_for('item', item_id=item.id)}}">
         <img class="card-img-top" src="{{ url_for('thumbnails', image=item.get_main_image())}}">
     </a>
     {% else %}
     <p><b>Нет изображения</b></p>
     {% endif %}
     <div class="card-body">
-        <h6 class="card-title"><a href="{{ url_for('item', item_id=item.id)}}" style="color: black">{{ item.name }}</a></h6>
-<!--        <p class="card-text">{{ item.description }}</p>-->
-
-        <a href="{{ url_for('item', item_id=item.id)}}" class="btn btn-sm btn-primary">Подробнее</a>
+        <span style="font-weight: bold"><a href="{{ url_for('item', item_id=item.id)}}">{{ item.name }}</a></span>
     </div>
 </div>
