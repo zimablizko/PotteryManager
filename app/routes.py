@@ -305,7 +305,7 @@ def login():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
+        user = db.session.query(User).filter((User.username == form.username.data) | (User.email == form.username.data)).first()
         if user is None or not user.check_password(form.password.data):
             flash('Неверное имя пользователя или пароль')
             return redirect(url_for('login'))
