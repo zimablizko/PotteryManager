@@ -8,7 +8,7 @@
         <tr>
             <th scope="col">Название</th>
             <th scope="col">Тип</th>
-            <th scope="col"> </th>
+            <th scope="col"></th>
         </tr>
         </thead>
         <tbody>
@@ -29,12 +29,14 @@
                     </li>
                     <li class="list-inline-item d-none d-sm-inline-block">
                         {% if mat.check_in_use() %}
-                        <a
-                           class="btn btn-secondary btn-sm rounded-0" type="button" data-toggle="tooltip"
-                           data-placement="top"  disabled title="Невозможно удалить, используется в существующих пробниках" ><i class="fa fa-trash"></i></a>
+                        <a class="btn btn-secondary btn-sm rounded-0" type="button" data-toggle="tooltip"
+                           data-placement="top" disabled
+                           title="Невозможно удалить, используется в существующих пробниках">
+                            <i class="fa fa-trash"></i></a>
                         {% else %}
-                        <a href="{{ url_for('delete_material', material_id=mat.id)}}"
-                           class="btn btn-danger btn-sm rounded-0" type="button" data-toggle="tooltip"
+                        <a delete-url="{{ url_for('delete_material', material_id=mat.id)}}" href="#delete_modal"
+                           data-toggle="modal"
+                           class="btn btn-danger btn-sm rounded-0" type="button"
                            data-placement="top" title="Удалить"><i class="fa fa-trash"></i></a>
                         {% endif %}
                     </li>
@@ -45,6 +47,30 @@
         </tbody>
     </table>
 </div>
+<div class="modal" id="delete_modal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Удаление материала</h4>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить материал?</p>
+            </div>
+            <div class="modal-footer">
+                <a name="delete-button" href="" class="btn mb-2 btn-danger">Удалить</a>
+                <a class="btn mb-2 btn-default" data-dismiss="modal">Отмена</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script lang="javascript">
+    $('#delete_modal').on('show.bs.modal', function (e) {
+        var url = $(e.relatedTarget).attr('delete-url');
+        var target = $(e.currentTarget).find('a[name="delete-button"]');
+        target.attr("href", url);
+    });
+</script>
 <hr>
 {% include '_materials_paginator.html' %}
 {% endblock %}
