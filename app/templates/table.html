@@ -9,6 +9,12 @@
             {{ form.glaze_filter( class="browser-default custom-select") }}
         </div>
         <div class="form-group col-md-4">
+            {{ form.temperature_min_filter.label }}
+            {{ form.temperature_min_filter( class="form-control", placeholder="От:", type="number") }}
+            <br>
+            {{ form.temperature_max_filter( class="form-control", placeholder="До:", type="number") }}
+        </div>
+        <div class="form-group col-md-4">
             {{ form.clay_filter.label }}
             {{ form.clay_filter( class="browser-default custom-select") }}
         </div>

@@ -6,6 +6,7 @@ from flask_wtf.file import FileAllowed, FileRequired
 from sqlalchemy import select, desc
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, FileField, RadioField, \
     IntegerField, TextAreaField, SelectMultipleField, FieldList, MultipleFileField
+from wtforms.fields.html5 import IntegerRangeField
 from wtforms.validators import DataRequired, ValidationError, Optional, length, EqualTo, Email
 
 from app.models import Item, ItemGlaze, User
@@ -24,6 +25,8 @@ class ListForm(FlaskForm):
         self.clay_filter.choices = clays_choices
     glaze_filter = SelectMultipleField('Глазурь:', choices=None, coerce=int, validators=[Optional()], render_kw={'data-live-search':'true'})
     clay_filter = SelectField('Глина:', choices=None, validators=[Optional()])
+    temperature_min_filter = IntegerField('Температура:', validators=[Optional()])
+    temperature_max_filter = IntegerField('Температура:', validators=[Optional()])
     submit = SubmitField('Фильтр')
 
 
@@ -41,6 +44,8 @@ class TableForm(FlaskForm):
     #glaze_filter = SelectField('Глазурь:', choices=None, coerce=int, validators=[Optional()])
     glaze_filter = SelectMultipleField('Глазурь:', choices=None, coerce=int, validators=[Optional()], render_kw={'data-live-search':'true'})
     clay_filter = SelectField('Глина:', choices=None, coerce=int, validators=[Optional()])
+    temperature_min_filter = IntegerField('Температура:', validators=[Optional()])
+    temperature_max_filter = IntegerField('Температура:', validators=[Optional()])
     submit = SubmitField('Фильтр')
 
 

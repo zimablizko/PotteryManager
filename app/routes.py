@@ -29,6 +29,12 @@ def list(page=1):
             if int(request.args['clay_filter']) > 0:
                 form.clay_filter.data = int(request.args['clay_filter'])
                 items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
+        if request.args['temperature_min_filter']:
+            form.temperature_min_filter.data = int(request.args['temperature_min_filter'])
+            items = items.filter(Item.temperature >= form.temperature_min_filter.data)
+        if request.args['temperature_max_filter']:
+            form.temperature_max_filter.data = int(request.args['temperature_max_filter'])
+            items = items.filter(Item.temperature <= form.temperature_max_filter.data)
         if len(request.args.getlist('glaze_filter')) > 0:
             _glaze_list = []
             for glaze in request.args.getlist('glaze_filter'):
@@ -79,6 +85,12 @@ def table():
     if len(request.args) > 0:
         print(request.query_string.decode())
         items = current_user.get_items()
+        if request.args['temperature_min_filter']:
+            form.temperature_min_filter.data = int(request.args['temperature_min_filter'])
+            items = items.filter(Item.temperature >= form.temperature_min_filter.data)
+        if request.args['temperature_max_filter']:
+            form.temperature_max_filter.data = int(request.args['temperature_max_filter'])
+            items = items.filter(Item.temperature <= form.temperature_max_filter.data)
         if int(request.args['clay_filter']) > 0:
             form.clay_filter.data = int(request.args['clay_filter'])
             items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
