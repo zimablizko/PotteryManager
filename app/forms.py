@@ -13,6 +13,18 @@ from app.models import Item, ItemGlaze, User
 
 
 class ItemsForm(FlaskForm):
+    def __init__(self, *args, **kwargs):
+        super(ItemsForm, self).__init__(*args, **kwargs)
+        glazes_choices = [(c.id, c.name) for c in current_user.get_global_materials(1)]
+        clays_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_global_materials(2)])
+        self.glaze_filter.choices = glazes_choices
+        self.clay_filter.choices = clays_choices
+    glaze_filter = SelectMultipleField('Глазурь:', choices=None, coerce=int, validators=[Optional()], render_kw={'data-live-search':'true'})
+    clay_filter = SelectField('Глина:', choices=None, validators=[Optional()])
+    temperature_min_filter = IntegerField('Температура:', validators=[Optional()])
+    temperature_max_filter = IntegerField('Температура:', validators=[Optional()])
+    submit = SubmitField('Фильтр')
+
     def get_public_items(self):
         return Item.query.filter(Item.delete_date == None).filter(Item.is_public == True).order_by(desc(Item.edit_date))
 

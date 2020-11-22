@@ -66,7 +66,30 @@ def list(page=1):
 @app.route('/items/<int:page>', methods=['GET', 'POST'])
 def index(page=1):
     form = ItemsForm()
-    public_items = form.get_public_items().paginate(page, app.config['ITEMS_PER_PAGE'], False)
+    if len(request.args) > 0:
+        public_items = form.get_public_items()
+        print(request.args['clay_filter'])
+        if request.args['clay_filter']:
+            if int(request.args['clay_filter']) > 0:
+                form.clay_filter.data = int(request.args['clay_filter'])
+                public_items = public_items.filter(Item.clay_id.__eq__(form.clay_filter.data))
+        if request.args['temperature_min_filter']:
+            form.temperature_min_filter.data = int(request.args['temperature_min_filter'])
+            public_items = public_items.filter(Item.temperature >= form.temperature_min_filter.data)
+        if request.args['temperature_max_filter']:
+            form.temperature_max_filter.data = int(request.args['temperature_max_filter'])
+            public_items = public_items.filter(Item.temperature <= form.temperature_max_filter.data)
+        if len(request.args.getlist('glaze_filter')) > 0:
+            _glaze_list = []
+            for glaze in request.args.getlist('glaze_filter'):
+                _glaze_list.append(int(glaze))
+            form.glaze_filter.data = _glaze_list
+            public_items = public_items.join(ItemGlaze).filter(ItemGlaze.glaze_id.in_(form.glaze_filter.data))
+            print(public_items.all())
+        public_items = public_items.paginate(page, app.config['ITEMS_PER_PAGE'], False)
+        print(public_items)
+    else:
+        public_items = form.get_public_items().paginate(page, app.config['ITEMS_PER_PAGE'], False)
     return render_template('items.html', form=form, title='My Glazes', items=public_items)
 
 
