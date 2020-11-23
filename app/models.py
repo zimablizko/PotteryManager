@@ -183,12 +183,13 @@ class User(UserMixin, db.Model):
 
     def get_global_materials(self, type_id):
         return Material.query.filter_by(type_id=type_id).filter(Material.delete_date == None).order_by('id')
-    # def get_all_materials(self):
-    #     return Material.query.filter_by(user_id=self.id).filter(Material.delete_date == None).order_by(
-    #         desc('edit_date'))
-    #
-    # def get_glazes(self):
-    #     return self.get_all_materials().filter_by(type_id=1)
+
+    def get_all_materials(self):
+        return Material.query.filter_by(user_id=self.id).filter(Material.delete_date == None).order_by(
+            desc('edit_date'))
+
+    def get_glazes(self):
+        return self.get_all_materials().filter_by(type_id=1)
 
     @login.user_loader
     def load_user(id):
