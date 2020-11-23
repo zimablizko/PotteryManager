@@ -9,14 +9,14 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField, Selec
 from wtforms.fields.html5 import IntegerRangeField
 from wtforms.validators import DataRequired, ValidationError, Optional, length, EqualTo, Email
 
-from app.models import Item, ItemGlaze, User
+from app.models import Item, ItemGlaze, User, Material
 
 
 class ItemsForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(ItemsForm, self).__init__(*args, **kwargs)
-        glazes_choices = [(c.id, c.name) for c in current_user.get_global_materials(1)]
-        clays_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_global_materials(2)])
+        glazes_choices = [(c.id, c.name) for c in Material.query.filter_by(type_id=1).filter(Material.delete_date == None).order_by('id')]
+        clays_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in Material.query.filter_by(type_id=2).filter(Material.delete_date == None).order_by('id')])
         self.glaze_filter.choices = glazes_choices
         self.clay_filter.choices = clays_choices
     glaze_filter = SelectMultipleField('Глазурь:', choices=None, coerce=int, validators=[Optional()], render_kw={'data-live-search':'true'})
