@@ -84,10 +84,11 @@ class Item(db.Model):
             images = []
             # такой бред, потому что возвращаются туплы
             for image_id, in images_id_list:
-                image = db.session.query(Image.name).filter_by(id=str(image_id)).first()
-                images.append(image[0])
+                image = db.session.query(Image).filter_by(id=str(image_id)).first()
+                images.append(image)
+            print(images)
             return images
-        return None
+        return []
 
     def get_edit_date(self):
         if self.edit_date > self.create_date:
@@ -95,6 +96,19 @@ class Item(db.Model):
         else:
             return self.create_date.date()
 
+    def get_clay_name(self):
+        clay = Material.query.join(Item).filter(Item.id == self.id).first()
+        if clay:
+            return clay.name
+        else:
+            return None
+
+    def get_glazes(self):
+        glazes = Material.query.join(ItemGlaze).filter(ItemGlaze.item_id == self.id).all()
+        if glazes:
+            return glazes
+        else:
+            return None
 
 class Image(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -122,6 +136,16 @@ class ItemImage(db.Model):
                 print(image_item)
                 image_item.order -= 1
         db.session.delete(self)
+        db.session.commit()
+
+    def make_image_first(self):
+        image_items_to_update = db.session.query(ItemImage).filter_by(item_id=self.item_id).filter(ItemImage.order < self.order).all()
+        print(image_items_to_update)
+        if len(image_items_to_update) > 0:
+            for image_item in image_items_to_update:
+                print(image_item)
+                image_item.order += 1
+        self.order = 0
         db.session.commit()
 
 
@@ -156,6 +180,9 @@ class User(UserMixin, db.Model):
     def get_materials(self, type_id):
         return Material.query.filter_by(user_id=self.id).filter_by(type_id=type_id).filter(
             Material.delete_date == None).order_by('id')
+
+    def get_global_materials(self, type_id):
+        return Material.query.filter_by(type_id=type_id).filter(Material.delete_date == None).order_by('id')
 
     def get_all_materials(self):
         return Material.query.filter_by(user_id=self.id).filter(Material.delete_date == None).order_by(

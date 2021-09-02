@@ -5,25 +5,40 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileRequired
 from sqlalchemy import select, desc
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, FileField, RadioField, \
-    IntegerField, TextAreaField, SelectMultipleField, FieldList
+    IntegerField, TextAreaField, SelectMultipleField, FieldList, MultipleFileField
+from wtforms.fields.html5 import IntegerRangeField
 from wtforms.validators import DataRequired, ValidationError, Optional, length, EqualTo, Email
 
-from app.models import Item, ItemGlaze, User
+from app.models import Item, ItemGlaze, User, Material
 
 
 class ItemsForm(FlaskForm):
+    def __init__(self, *args, **kwargs):
+        super(ItemsForm, self).__init__(*args, **kwargs)
+        glazes_choices = [(c.id, c.name) for c in Material.query.filter_by(type_id=1).filter(Material.delete_date == None).order_by('id')]
+        clays_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in Material.query.filter_by(type_id=2).filter(Material.delete_date == None).order_by('id')])
+        self.glaze_filter.choices = glazes_choices
+        self.clay_filter.choices = clays_choices
+    glaze_filter = SelectMultipleField('Глазурь:', choices=None, coerce=int, validators=[Optional()], render_kw={'data-live-search':'true'})
+    clay_filter = SelectField('Глина:', choices=None, validators=[Optional()])
+    temperature_min_filter = IntegerField('Температура:', validators=[Optional()])
+    temperature_max_filter = IntegerField('Температура:', validators=[Optional()])
+    submit = SubmitField('Фильтр')
+
     def get_public_items(self):
         return Item.query.filter(Item.delete_date == None).filter(Item.is_public == True).order_by(desc(Item.edit_date))
 
 class ListForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(ListForm, self).__init__(*args, **kwargs)
-        glazes_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_materials(1)])
+        glazes_choices = [(c.id, c.name) for c in current_user.get_materials(1)]
         clays_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_materials(2)])
         self.glaze_filter.choices = glazes_choices
         self.clay_filter.choices = clays_choices
-    glaze_filter = SelectField('Глазурь:', choices=None, coerce=int, validators=[Optional()])
-    clay_filter = SelectField('Глина:', choices=None, coerce=int, validators=[Optional()])
+    glaze_filter = SelectMultipleField('Глазурь:', choices=None, coerce=int, validators=[Optional()], render_kw={'data-live-search':'true'})
+    clay_filter = SelectField('Глина:', choices=None, validators=[Optional()])
+    temperature_min_filter = IntegerField('Температура:', validators=[Optional()])
+    temperature_max_filter = IntegerField('Температура:', validators=[Optional()])
     submit = SubmitField('Фильтр')
 
 
@@ -31,15 +46,18 @@ class TableForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(TableForm, self).__init__(*args, **kwargs)
         glazes = current_user.get_materials(1)
-        glazes_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in glazes])
+        glazes_choices = [(c.id, c.name) for c in glazes]
         clays_choices = ([(0, 'Все')]).__add__([(c.id, c.name) for c in current_user.get_materials(2)])
         self.glazes = glazes
         self.glaze_filter.choices = glazes_choices
         self.clay_filter.choices = clays_choices
 
     glazes = None
-    glaze_filter = SelectField('Глазурь:', choices=None, coerce=int, validators=[Optional()])
+    #glaze_filter = SelectField('Глазурь:', choices=None, coerce=int, validators=[Optional()])
+    glaze_filter = SelectMultipleField('Глазурь:', choices=None, coerce=int, validators=[Optional()], render_kw={'data-live-search':'true'})
     clay_filter = SelectField('Глина:', choices=None, coerce=int, validators=[Optional()])
+    temperature_min_filter = IntegerField('Температура:', validators=[Optional()])
+    temperature_max_filter = IntegerField('Температура:', validators=[Optional()])
     submit = SubmitField('Фильтр')
 
 
@@ -57,17 +75,21 @@ class AddItemForm(FlaskForm):
         self.glaze_list[1].choices = glazes_additional_choices
         self.glaze_list[2].choices = glazes_additional_choices
         self.clay_id.choices = clays_choices
+        self.glaze_list[0].label = "Глазурь 1:"
+        self.glaze_list[1].label = "Глазурь 2:"
+        self.glaze_list[2].label = "Глазурь 3:"
 
     name = StringField('Название пробника:', validators=[Optional(), length(max=256)])
     description = TextAreaField('Описание:', validators=[Optional(), length(max=500)])
     is_public = BooleanField('Публичный доступ:')
     temperature = IntegerField('Температура:', validators=[DataRequired()])
-    glaze_list = FieldList(SelectField('Глазурь:', choices=None, validate_choice=False,
+    glaze_list = FieldList(SelectField('', choices=None, validate_choice=False,
                              coerce=int), min_entries=3)
     clay_id = SelectField('Глина:', choices=None, validate_choice=False, coerce=int)
     # image = FileField(u'Фото:', validators=[FileAllowed(['jpeg', 'jpg', 'png'], 'Images only!')])
     image_list = FieldList(FileField(u'Фото:', validators=[FileAllowed(['jpeg', 'jpg', 'png'], 'Images only!')]), min_entries=3)
-    submit = SubmitField('Добавить')
+    images = MultipleFileField(u'Фото:', validators=[FileAllowed(['jpeg', 'jpg', 'png'], 'Images only!')])
+    submit = SubmitField('Готово')
 
 
 class AddMaterialForm(FlaskForm):
@@ -78,7 +100,7 @@ class AddMaterialForm(FlaskForm):
 
     name = StringField('Название материала:', validators=[Optional(), length(max=256)])
     type_id = SelectField('Тип материала:', choices=None, validate_choice=False, coerce=int)
-    submit = SubmitField('Добавить')
+    submit = SubmitField('Готово')
 
 
 class MaterialListForm(FlaskForm):

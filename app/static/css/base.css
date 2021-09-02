@@ -1,9 +1,57 @@
 .img-wrap {
     position: relative;
 }
+
 .img-wrap .img-delete {
     position: absolute;
     top: 2px;
     right: 2px;
     z-index: 100;
+}
+
+.img-wrap .img-make-first {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    z-index: 100;
+}
+
+.item-info-list {
+    margin-top: -10px;
+}
+
+.table td {
+    padding: .15rem
+}
+
+.custom-multi-select {
+    width: 100%;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+}
+
+.table-image {
+    width: 100px;
+}
+
+@media (max-width: 767.98px) {
+    .table-image {
+        width: 50px;
+    }
+
+    .item-table {
+        font-size: 0.5rem;
+    }
+
+    .item-table th {
+        padding: .10rem;
+    }
+
+    .h1, h1 {
+        font-size: 1.5rem;
+    }
+}
+
+.h1, h1 {
+    margin: 1rem 0;
 }

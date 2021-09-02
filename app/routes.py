@@ -7,16 +7,14 @@ from datetime import datetime
 from flask import render_template, flash, redirect, url_for, request, send_from_directory
 from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy import func
-from sqlalchemy.sql.functions import count
 from werkzeug.urls import url_parse
-from werkzeug.utils import secure_filename
-from wtforms import SelectField
-from wtforms.validators import Optional
 
-from app import app, db, utils
+from app import app, db
 from app.forms import LoginForm, AddItemForm, ListForm, AddGlazeForm, AddClayForm, TableForm, RegistrationForm, \
     ItemForm, RecoveryForm, RecoveryPassForm, ItemsForm, MaterialListForm, AddMaterialForm
 from app.models import Item, ItemGlaze, User, ItemImage, Image, Material
+from app.utils import utils, utils_db
+from app.utils.utils_db import save_item
 
 
 @app.route('/list', methods=['GET', 'POST'])
@@ -24,16 +22,40 @@ from app.models import Item, ItemGlaze, User, ItemImage, Image, Material
 @login_required
 def list(page=1):
     form = ListForm()
-    if form.validate_on_submit():
+    if len(request.args) > 0:
         items = current_user.get_items()
-        if form.clay_filter.data > 0:
-            items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
-        if form.glaze_filter.data > 0:
-            items = items.join(ItemGlaze).filter(ItemGlaze.glaze_id.__eq__(form.glaze_filter.data))
+        print(request.args['clay_filter'])
+        if request.args['clay_filter']:
+            if int(request.args['clay_filter']) > 0:
+                form.clay_filter.data = int(request.args['clay_filter'])
+                items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
+        if request.args['temperature_min_filter']:
+            form.temperature_min_filter.data = int(request.args['temperature_min_filter'])
+            items = items.filter(Item.temperature >= form.temperature_min_filter.data)
+        if request.args['temperature_max_filter']:
+            form.temperature_max_filter.data = int(request.args['temperature_max_filter'])
+            items = items.filter(Item.temperature <= form.temperature_max_filter.data)
+        if len(request.args.getlist('glaze_filter')) > 0:
+            _glaze_list = []
+            for glaze in request.args.getlist('glaze_filter'):
+                _glaze_list.append(int(glaze))
+            form.glaze_filter.data = _glaze_list
+            items = items.join(ItemGlaze).filter(ItemGlaze.glaze_id.in_(form.glaze_filter.data))
+            print(items.all())
         items = items.paginate(page, app.config['ITEMS_PER_PAGE'], False)
+        print(items)
     else:
         items = current_user.get_items().paginate(page, app.config['ITEMS_PER_PAGE'], False)
-        print(items)
+    # if form.validate_on_submit():
+    #     items = current_user.get_items()
+    #     if form.clay_filter.data > 0:
+    #         items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
+    #     if form.glaze_filter.data > 0:
+    #         items = items.join(ItemGlaze).filter(ItemGlaze.glaze_id.__eq__(form.glaze_filter.data))
+    #     items = items.paginate(page, app.config['ITEMS_PER_PAGE'], False)
+    # else:
+    #     items = current_user.get_items().paginate(page, app.config['ITEMS_PER_PAGE'], False)
+    #     print(items)
     return render_template('list.html', form=form, title='Мои пробники', items=items)
 
 
@@ -44,18 +66,64 @@ def list(page=1):
 @app.route('/items/<int:page>', methods=['GET', 'POST'])
 def index(page=1):
     form = ItemsForm()
-    public_items = form.get_public_items().paginate(page, app.config['ITEMS_PER_PAGE'], False)
-    return render_template('items.html', form=form, title='Публичные пробники', items=public_items)
+    if len(request.args) > 0:
+        public_items = form.get_public_items()
+        print(request.args['clay_filter'])
+        if request.args['clay_filter']:
+            if int(request.args['clay_filter']) > 0:
+                form.clay_filter.data = int(request.args['clay_filter'])
+                public_items = public_items.filter(Item.clay_id.__eq__(form.clay_filter.data))
+        if request.args['temperature_min_filter']:
+            form.temperature_min_filter.data = int(request.args['temperature_min_filter'])
+            public_items = public_items.filter(Item.temperature >= form.temperature_min_filter.data)
+        if request.args['temperature_max_filter']:
+            form.temperature_max_filter.data = int(request.args['temperature_max_filter'])
+            public_items = public_items.filter(Item.temperature <= form.temperature_max_filter.data)
+        if len(request.args.getlist('glaze_filter')) > 0:
+            _glaze_list = []
+            for glaze in request.args.getlist('glaze_filter'):
+                _glaze_list.append(int(glaze))
+            form.glaze_filter.data = _glaze_list
+            public_items = public_items.join(ItemGlaze).filter(ItemGlaze.glaze_id.in_(form.glaze_filter.data))
+            print(public_items.all())
+        public_items = public_items.paginate(page, app.config['ITEMS_PER_PAGE'], False)
+        print(public_items)
+    else:
+        public_items = form.get_public_items().paginate(page, app.config['ITEMS_PER_PAGE'], False)
+    return render_template('items.html', form=form, title='My Glazes', items=public_items)
 
 
 @app.route('/table', methods=['GET', 'POST'])
 @login_required
 def table():
     form = TableForm()
-    if form.validate_on_submit():
+    # if form.validate_on_submit():
+    #     items = current_user.get_items()
+    #     if form.clay_filter.data > 0:
+    #         items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
+    #     if len(form.glaze_filter.data) > 0:
+    #         items = items.join(ItemGlaze).filter(ItemGlaze.glaze_id.in_(form.glaze_filter.data))
+    #         form.glazes = Material.query.filter(Material.id.in_(form.glaze_filter.data)).all()
+    #     items = items.all()
+    if len(request.args) > 0:
+        print(request.query_string.decode())
         items = current_user.get_items()
-        if form.clay_filter.data > 0:
+        if request.args['temperature_min_filter']:
+            form.temperature_min_filter.data = int(request.args['temperature_min_filter'])
+            items = items.filter(Item.temperature >= form.temperature_min_filter.data)
+        if request.args['temperature_max_filter']:
+            form.temperature_max_filter.data = int(request.args['temperature_max_filter'])
+            items = items.filter(Item.temperature <= form.temperature_max_filter.data)
+        if int(request.args['clay_filter']) > 0:
+            form.clay_filter.data = int(request.args['clay_filter'])
             items = items.filter(Item.clay_id.__eq__(form.clay_filter.data))
+        if len(request.args.getlist('glaze_filter')) > 0:
+            _glaze_list = []
+            for glaze in request.args.getlist('glaze_filter'):
+                _glaze_list.append(int(glaze))
+            form.glaze_filter.data = _glaze_list
+            items = items.join(ItemGlaze).filter(ItemGlaze.glaze_id.in_(form.glaze_filter.data))
+            form.glazes = Material.query.filter(Material.id.in_(form.glaze_filter.data)).all()
         items = items.all()
     else:
         items = current_user.get_items().all()
@@ -68,7 +136,9 @@ def table():
 @app.route('/item/<item_id>', methods=['GET', 'POST'])
 def item(item_id):
     form = ItemForm(item_id)
-    item = db.session.query(Item).filter(Item.id == item_id).one()
+    item = db.session.query(Item).filter(Item.id == item_id).one_or_none()
+    if item is None:
+        return render_template('error.html', error="Пробник не найден")
     if not item.is_public and (current_user.is_anonymous or current_user.id != item.user_id):
         return render_template('error.html', error="Ошибка доступа")
     return render_template('item.html', form=form, item=item)
@@ -81,8 +151,6 @@ def add_item():
     if form.validate_on_submit():
         item = Item(name=form.name.data, description=form.description.data, clay_id=form.clay_id.data,
                     user_id=current_user.id, temperature=form.temperature.data, is_public=form.is_public.data)
-        #if form.image.data:
-        #    utils.save_image(request.files['image'], item)
         if not form.name.data:
             item.name = db.session.query(Material).filter_by(id=item.clay_id).first().name + ': '
         db.session.add(item)
@@ -98,24 +166,25 @@ def add_item():
                     item_glaze = ItemGlaze(glaze_id=form.glaze_list[i].data, item_id=item_id, order=i)
                     db.session.add(item_glaze)
                 if not form.name.data:
-                    item.name += ' + ' + db.session.query(Material).filter_by(id=form.glaze_list[i].data).first().name
+                    if i > 0:
+                        item.name += ' + '
+                    item.name += db.session.query(Material).filter_by(id=form.glaze_list[i].data).first().name
             else:
                 if item_glaze:
                     db.session.delete(item_glaze)
         # Обработка изображений
-        for i, item_image in enumerate(form.image_list):
-            item_image = db.session.query(ItemImage).filter(ItemImage.item_id == item_id).filter(
-                ItemImage.order == i).one_or_none()
-            if form.image_list[i].data:
+        image_list = form.images.data
+        print(image_list)
+        order = 0
+        for image_file in image_list:
+            if image_file:
                 image = Image()
-                utils.save_image(request.files['image_list-'+str(i)], image)
+                utils_db.save_image(image_file, image)
                 db.session.add(image)
                 image_id = db.session.query(func.max(Image.id)).scalar()
-                if item_image:
-                    item_image.image_id = image_id
-                else:
-                    item_image = ItemImage(image_id=image_id, item_id=item_id, order=i)
-                    db.session.add(item_image)
+                item_image = ItemImage(image_id=image_id, item_id=item_id, order=order)
+                db.session.add(item_image)
+                order += 1
         flash('Пробник {} добавлен!'.format(item.name))
         db.session.commit()
         return redirect(url_for('list'))
@@ -128,55 +197,18 @@ def edit_item(item_id):
     form = AddItemForm(item_id)
     if form.validate_on_submit():
         # Сохранение полей пробника
-        item = db.session.query(Item).filter(Item.id == item_id).one()
-        if not form.name.data:
-            item.name = db.session.query(Material).filter_by(id=item.clay_id).first().name + ': '
-        else:
-            item.name = form.name.data
-        item.description = form.description.data
-        item.temperature = form.temperature.data
-        item.clay_id = form.clay_id.data
-        item.is_public = form.is_public.data
-        item.edit_date = datetime.utcnow()
-       # if form.image.data:
-        #    utils.save_image(request.files['image'], item)
-        # Обработка глазурей
-        for i, item_glaze in enumerate([None] * app.config['GLAZE_MAX_COUNT']):
-            item_glaze = db.session.query(ItemGlaze).filter(ItemGlaze.item_id == item_id).filter(
-                ItemGlaze.order == i).one_or_none()
-            if form.glaze_list[i].data > 0:
-                if item_glaze:
-                    item_glaze.glaze_id = form.glaze_list[i].data
-                else:
-                    item_glaze = ItemGlaze(glaze_id=form.glaze_list[i].data, item_id=item_id, order=i)
-                    db.session.add(item_glaze)
-                if not form.name.data:
-                    item.name += ' + ' + db.session.query(Material).filter_by(id=form.glaze_list[i].data).first().name
-            else:
-                if item_glaze:
-                    db.session.delete(item_glaze)
-        # Обработка изображений
-        print("tetetet")
-        print(form.image_list)
-        for i, item_image in enumerate([None] * app.config['IMAGE_MAX_COUNT']):
-            item_image = db.session.query(ItemImage).filter(ItemImage.item_id == item_id).filter(
-                ItemImage.order == i).one_or_none()
-            if form.image_list[i].data:
-                print(form.image_list[i].data)
-                image = Image()
-                utils.save_image(request.files['image_list-' + str(i)], image)
-                db.session.add(image)
-                image_id = db.session.query(func.max(Image.id)).scalar()
-                if item_image:
-                    item_image.image_id = image_id
-                else:
-                    item_image = ItemImage(image_id=image_id, item_id=item_id, order=i)
-                    db.session.add(item_image)
-        db.session.commit()
+        save_item(item_id, form, db)
         return redirect(url_for('list'))
     else:
         item = Item.query.filter_by(id=item_id).one()
         if current_user.id == item.user_id:
+            # if len(request.args) > 0:
+            #     if int(request.args['delete_image']) > 0:
+            #         delete_image_id = int(request.args['delete_image'])
+            #         item_image = db.session.query(ItemImage).filter(ItemImage.item_id == item_id).filter(
+            #             ItemImage.image_id == delete_image_id).one()
+            #         item_image.delete_image()
+            form.item = item
             form.id = item.id
             glaze_list = [None] * 3
             for i, glaze in enumerate(glaze_list):
@@ -196,7 +228,6 @@ def edit_item(item_id):
             form.is_public.data = item.is_public
             form.clay_id.data = item.clay_id
             #form.image_name = item.image_name
-            form.submit.label.text = 'Изменить'
             return render_template('add_item.html', title='Изменение пробника', form=form)
         else:
             return redirect(url_for('list'))
@@ -206,8 +237,15 @@ def edit_item(item_id):
 @login_required
 def delete_image(image_id, item_id):
     item_image = db.session.query(ItemImage).filter(ItemImage.item_id == item_id).filter(ItemImage.image_id == image_id).one()
-    print(item_image)
     item_image.delete_image()
+    return redirect(url_for('edit_item', item_id=item_id))
+
+
+@app.route('/edit_item/<item_id>/make_image_first/<image_id>')
+@login_required
+def make_image_first(image_id, item_id):
+    item_image = db.session.query(ItemImage).filter(ItemImage.item_id == item_id).filter(ItemImage.image_id == image_id).one()
+    item_image.make_image_first()
     return redirect(url_for('edit_item', item_id=item_id))
 
 
@@ -227,10 +265,7 @@ def delete_item(item_id):
 @login_required
 def materials_list(page=1):
     form = MaterialListForm()
-    materials = current_user.get_all_materials().all()
-    for mat in materials:
-        mat.type = 'test test test test test test test test '
-    print(materials)
+    materials = current_user.get_all_materials().paginate(page, app.config['MATERIALS_PER_PAGE'], False)
     return render_template('materials.html', form=form, title='Мои материалы', materials=materials)
 
 
@@ -256,11 +291,10 @@ def edit_material(material_id):
         db.session.commit()
         return redirect(url_for('materials_list'))
     else:
-        mat = db.session.query(Material).filter(Material.id == material_id).one()
-        if current_user.id == mat.user_id:
-            form.name.data = mat.name
+        form.mat = db.session.query(Material).filter(Material.id == material_id).one()
+        if current_user.id == form.mat.user_id:
+            form.name.data = form.mat.name
             form.type_id.render_kw = {'disabled': 'disabled'}
-            form.submit.label.text = 'Изменить'
             return render_template('add_material.html', title='Редактирование материала', form=form)
         else:
             return redirect(url_for('materials_list'))
@@ -306,7 +340,7 @@ def login():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
+        user = db.session.query(User).filter((User.username == form.username.data) | (User.email == form.username.data)).first()
         if user is None or not user.check_password(form.password.data):
             flash('Неверное имя пользователя или пароль')
             return redirect(url_for('login'))

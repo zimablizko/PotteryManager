@@ -16,17 +16,6 @@ class MultiCheckboxField(SelectMultipleField):
     widget = widgets.ListWidget(prefix_label=False)
     option_widget = widgets.CheckboxInput()
 
-
-def save_image(file, image):
-    filename = ''.join(random.choices(string.ascii_lowercase + string.digits, k=15)) + '.' + (
-        file.filename.split('.').pop())
-    file.save(os.path.join(app.config['IMAGE_FOLDER'], filename))
-    image.name = filename
-    image_file = Image.open(os.path.join(app.config['IMAGE_FOLDER'], image.name))
-    image_file.thumbnail((800, 800))
-    image_file.save(os.path.join(app.config['THUMBNAIL_FOLDER'], image.name))
-
-
 def send_email(subject, to_addr, from_addr, body_text):
     msg = MIMEText(body_text, 'plain', 'utf-8')
     msg['Subject'] = Header(subject, 'utf-8')
